@@ -16,6 +16,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+#로그인후 마이페이지로 이동 (로그아웃 후 홈페이지)
+LOGIN_REDIRECT_URL = '/user/mypage'
+LOGOUT_REDIRECT_URL = '/'
+
+
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 

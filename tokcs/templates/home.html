@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>ToktokCS - Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* 기본 리셋 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .header p {
+      font-size: 16px;
+      color: #666;
+    }
+    .card-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      flex: 1 1 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card h2 {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #222;
+    }
+    .card p {
+      font-size: 16px;
+      margin-bottom: 20px;
+      color: #666;
+    }
+    .card a {
+      display: inline-block;
+      background-color: #0064FF;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    .card a:hover {
+      background-color: #0052CC;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>ToktokCS</h1>
+      <p>문제 만들기와 내 문제 관리, 모두 여기서 시작하세요!</p>
+    </div>
+    <div class="card-container">
+      <div class="card">
+        <h2>문제 만들기</h2>
+        <p>새로운 문제를 등록하여 당신의 지식을 공유하세요.</p>
+        <a href="{% url 'create_question' %}">문제 만들기</a>
+      </div>
+      <div class="card">
+        <h2>내 문제 관리</h2>
+        <p>내가 만든 문제와 답안을 한눈에 확인하세요.</p>
+        <a href="{% url 'mypage' %}">마이페이지</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

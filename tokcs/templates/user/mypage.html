@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>마이페이지 - TOKCS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #f9f9f9;
+      font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .mypage-container {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 32px;
+      font-weight: 700;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .card li {
+      padding: 16px 0;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.3s;
+    }
+
+    .card li:hover {
+      background-color: #f5f7fa;
+    }
+
+    .card li:last-child {
+      border-bottom: none;
+    }
+
+    .question-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .date {
+      font-size: 13px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status.correct {
+      color: #2e7d32;
+    }
+
+    .status.wrong {
+      color: #d32f2f;
+    }
+
+    .empty {
+      color: #999;
+      padding: 16px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="mypage-container">
+    <h1>마이페이지</h1>
+
+    <!-- 내가 만든 문제 목록 -->
+    <div class="card">
+      <h2>내가 만든 문제</h2>
+      <ul>
+        {% if my_questions %}
+          {% for question in my_questions %}
+          <li>
+            <div class="question-title">{{ question.question_text }}</div>
+            <div class="date">등록일: {{ question.created_at|date:"Y년 m월 d일" }}</div>
+          </li>
+          {% endfor %}
+        {% else %}
+          <li class="empty">등록한 문제가 없습니다.</li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <!-- 내가 푼 문제 목록 -->
+    <div class="card">
+      <h2>내가 푼 문제</h2>
+      <ul>
+        {% if my_answers %}
+          {% for answer in my_answers %}
+          <li>
+            <div class="question-title">{{ answer.question.question_text }}</div>
+            <div class="status {% if answer.is_correct %}correct{% else %}wrong{% endif %}">
+              {% if answer.is_correct %}
+                ✅ 정답
+              {% else %}
+                ❌ 오답
+              {% endif %}
+            </div>
+            <div class="date">푼 날짜: {{ answer.answered_at|date:"Y년 m월 d일" }}</div>
+          </li>
+          {% endfor %}
+        {% else %}
+          <li class="empty">푼 문제가 없습니다.</li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

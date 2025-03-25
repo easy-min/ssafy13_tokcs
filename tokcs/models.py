@@ -45,7 +45,14 @@ class QuizQuestion(models.Model):
     ]
     
     code = models.CharField(max_length=50, unique=True, verbose_name="문제 코드")
-    
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="작성자", null=True, blank=True)
+    topic = models.ForeignKey(
+        Topic,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="주제"
+    )
     # 문제를 단원과 연결합니다.
     chapter = models.ForeignKey(
         Chapter,
@@ -89,20 +96,29 @@ class QuizQuestion(models.Model):
     def save(self, *args, **kwargs):
         if not self.code:
             if self.is_tail_question and self.parent_question:
+                # 꼬리 질문 코드 생성
                 siblings = QuizQuestion.objects.filter(
                     parent_question=self.parent_question, is_tail_question=True
                 )
                 if siblings.exists():
-                    last_num = max([int(sibling.code.split('-')[-1]) for sibling in siblings if '-' in sibling.code] or [0])
-                    self.code = f"{self.parent_question.code}-{last_num + 1}"
+                    last_num = max([
+                        int(sibling.code.split('-')[-1]) 
+                        for sibling in siblings 
+                        if '-' in sibling.code and sibling.code.split('-')[-1].isdigit()
+                    ] or [0])
                 else:
-                    self.code = f"{self.parent_question.code}-1"
+                    last_num = 0
+                self.code = f"{self.parent_question.code}-{last_num + 1}"
             else:
+                # 일반 문제 코드 생성
                 if self.chapter and self.chapter.topic:
                     prefix = self.chapter.topic.name[:2].upper()
                 else:
                     prefix = "XX"
-                last_question = QuizQuestion.objects.filter(is_tail_question=False, chapter=self.chapter).order_by('id').last()
+                last_question = QuizQuestion.objects.filter(
+                    is_tail_question=False, chapter=self.chapter
+                ).order_by('id').last()
+
                 if last_question and last_question.code.startswith(prefix):
                     try:
                         last_number = int(last_question.code.replace(prefix, ""))
@@ -111,7 +127,16 @@ class QuizQuestion(models.Model):
                 else:
                     last_number = 0
                 self.code = f"{prefix}{last_number + 1:03d}"
+
+        # 중복 방지 루프
+        counter = 1
+        original_code = self.code
+        while QuizQuestion.objects.filter(code=self.code).exists():
+            self.code = f"{original_code}-{counter}"
+            counter += 1
+
         super().save(*args, **kwargs)
+
 
 class QuizChoice(models.Model):
     question = models.ForeignKey(

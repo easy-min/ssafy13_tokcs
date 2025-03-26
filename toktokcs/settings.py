@@ -136,28 +136,16 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'console': {
+            'level': 'WARNING',  # INFO나 WARNING으로 변경
             'class': 'logging.StreamHandler',
-            # Optional: Formatter를 지정해도 됨
-            'formatter': 'verbose',
         },
-    },
-    'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name}: {message}',
-            'style': '{',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',  # DEBUG 레벨까지 출력되도록 설정
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
+            'level': 'WARNING',  # INFO나 WARNING으로 변경
         },
-        # 필요시, 프로젝트의 다른 모듈 로거 설정도 추가
     },
 }
+
 

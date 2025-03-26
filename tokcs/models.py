@@ -151,21 +151,42 @@ class QuizChoice(models.Model):
     def __str__(self):
         return f"{self.question.code} - {self.choice_text}"
 
-class UserAnswer(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자")
-    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE, verbose_name="문제")
-    selected_choice = models.ForeignKey(
-        QuizChoice,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        verbose_name="선택한 보기"
-    )
-    answer_text = models.TextField(verbose_name="답안 내용", blank=True)
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name="제출 시각")
-    score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="점수")
-    graded = models.BooleanField(default=False, verbose_name="채점 완료 여부")
-    feedback = models.TextField(verbose_name="채점 피드백", blank=True)
-    
+class ObjectiveAnswer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
+    selected_choice = models.ForeignKey(QuizChoice, on_delete=models.SET_NULL, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+class SubjectiveAnswer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
+    answer_text = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    graded = models.BooleanField(default=False)
+    feedback = models.TextField(blank=True)
+
     def __str__(self):
         return f"{self.user.username} - {self.question.code}"
+
+class DailyQuizPool(models.Model):
+    day_number = models.IntegerField(unique=True)
+    title = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    topics = models.ManyToManyField('Topic', blank=True)
+    chapters = models.ManyToManyField('Chapter', blank=True)
+    question_bank = models.ManyToManyField('QuizQuestion', blank=True)  # 문제은행
+    num_questions_per_user = models.IntegerField(default=20)  # 유저당 몇 개 출제
+
+    def __str__(self):
+        return f"Day {self.day_number} - {self.title}"
+
+
+class UserDailyQuiz(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    day_quiz = models.ForeignKey(DailyQuizPool, on_delete=models.CASCADE)
+    assigned_questions = models.ManyToManyField('QuizQuestion')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    total_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # 추가된 필드
+    def __str__(self):
+        return f"{self.user.username} - Day {self.day_quiz.day_number}"

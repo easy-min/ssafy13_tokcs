@@ -146,7 +146,7 @@
 <body>
   <div class="card">
     <h1>주관식 문제 입력</h1>
-    <form method="post" action="{% url 'create_question' %}">
+    <form method="post" action="{% url 'create_subjective_quiz' %}">
       {% csrf_token %}
 
       <!-- 주제 선택 (현재 옵션은 하나로 고정) -->

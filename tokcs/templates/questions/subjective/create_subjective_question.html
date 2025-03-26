@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <title>주관식 문제 입력 - ToktokCS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* 기본 리셋 */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       background-color: #f7f7f7;
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
@@ -17,36 +22,38 @@
       padding: 20px;
       min-height: 100vh;
     }
-    
+
     .card {
       background-color: #fff;
       width: 100%;
       max-width: 500px;
       padding: 30px 24px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-    
+
     h1 {
       text-align: center;
       margin-bottom: 24px;
       font-size: 22px;
       color: #333;
     }
-    
+
     form {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
-    
+
     label {
       font-size: 15px;
       color: #555;
       margin-bottom: 4px;
     }
-    
-    select, input[type="text"], textarea {
+
+    select,
+    input[type="text"],
+    textarea {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid #ddd;
@@ -54,26 +61,26 @@
       font-size: 15px;
       color: #333;
     }
-    
+
     textarea {
       resize: vertical;
       min-height: 100px;
     }
-    
+
     .info {
       font-size: 13px;
       color: #888;
     }
-    
+
     .checkbox-group {
       display: flex;
       align-items: center;
     }
-    
+
     .checkbox-group input {
       margin-right: 8px;
     }
-    
+
     button {
       padding: 14px;
       font-size: 16px;
@@ -85,14 +92,16 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-    
+
     button:hover {
       background-color: #0052CC;
     }
-    
+
     /* 꼬리 질문 입력 영역 */
-    #tail-questions-container { margin-top: 16px; }
-    
+    #tail-questions-container {
+      margin-top: 16px;
+    }
+
     .add-btn {
       background-color: transparent;
       color: #0064FF;
@@ -103,7 +112,7 @@
       margin-top: 8px;
       align-self: flex-end;
     }
-    
+
     .tail-question {
       border: 1px dashed #ccc;
       padding: 16px;
@@ -111,11 +120,13 @@
       margin-top: 16px;
       background-color: #fafafa;
     }
+
     .tail-question h3 {
       font-size: 16px;
       margin-bottom: 8px;
       color: #333;
     }
+
     .tail-question button.remove-tail-btn {
       background-color: #FF4C4C;
       margin-top: 8px;
@@ -125,62 +136,64 @@
       border-radius: 8px;
       cursor: pointer;
     }
+
     .tail-question button.remove-tail-btn:hover {
       background-color: #e03d3d;
     }
   </style>
 </head>
+
 <body>
   <div class="card">
     <h1>주관식 문제 입력</h1>
     <form method="post" action="{% url 'create_question' %}">
       {% csrf_token %}
-      
+
       <!-- 주제 선택 (현재 옵션은 하나로 고정) -->
       <label for="topic">주제</label>
       <select id="topic" name="topic" required>
         {% for topic in topics %}
-          <option value="{{ topic.id }}">{{ topic.name }}</option>
+        <option value="{{ topic.id }}">{{ topic.name }}</option>
         {% endfor %}
       </select>
-      
+
       <!-- 단원 선택 (해당 주제에 속한 단원 목록) -->
       <label for="chapter">단원 선택</label>
       <select id="chapter" name="chapter" required>
         {% for chapter in chapters %}
-          <option value="{{ chapter.id }}">{{ chapter.name }}</option>
+        <option value="{{ chapter.id }}">{{ chapter.name }}</option>
         {% endfor %}
       </select>
-      
+
       <!-- 문제 코드는 자동 생성됨 안내 -->
       <p class="info">문제 코드는 자동 생성됩니다. (예: "OS" 접두어 사용)</p>
-      
+
       <label for="question_text">질문 내용</label>
       <textarea id="question_text" name="question_text" placeholder="질문 내용을 입력하세요" required></textarea>
-      
+
       <label for="answer_text">모범 답안</label>
       <textarea id="answer_text" name="answer_text" placeholder="모범 답안을 입력하세요" required></textarea>
-      
+
       <label for="keywords">주요 키워드</label>
       <input type="text" id="keywords" name="keywords" placeholder="예: 중앙 처리 장치, 명령어 해석, 실행">
-      
+
       <label for="explanation">해설 (선택)</label>
       <textarea id="explanation" name="explanation" placeholder="문제 해설을 입력하세요"></textarea>
-      
+
       <div class="checkbox-group">
         <input type="checkbox" id="is_tail_question" name="is_tail_question">
         <label for="is_tail_question">꼬리 질문 여부</label>
       </div>
-      
+
       <!-- 주관식 문제임을 나타내는 숨은 입력 -->
       <input type="hidden" name="question_type" value="subjective">
-      
+
       <!-- 꼬리 질문들을 담을 컨테이너 -->
       <div id="tail-questions-container"></div>
-      
+
       <!-- 꼬리 질문 추가 버튼 -->
       <button type="button" class="add-btn" id="add-tail-btn">+ 꼬리 질문 추가</button>
-      
+
       <!-- 최종 제출 버튼 -->
       <button type="submit">문제 등록</button>
     </form>
@@ -208,16 +221,45 @@
     const container = document.getElementById('tail-questions-container');
     const template = document.getElementById('tail-question-template').content;
 
-    addTailBtn.addEventListener('click', function() {
+    addTailBtn.addEventListener('click', function () {
       const clone = document.importNode(template, true);
       container.appendChild(clone);
     });
 
-    container.addEventListener('click', function(e) {
+    container.addEventListener('click', function (e) {
       if (e.target && e.target.classList.contains('remove-tail-btn')) {
         e.target.closest('.tail-question').remove();
       }
     });
+
+    const tailCheckBox = document.getElementById('is_tail_question');
+
+    // 꼬리 질문 추가 이벤트
+    addTailBtn.addEventListener('click', function () {
+      const clone = document.importNode(template, true);
+      container.appendChild(clone);
+      checkTailStatus();  // 꼬리 질문 추가 후 체크 상태 확인
+    });
+
+    // 꼬리 질문 삭제 이벤트 (기존 삭제 이벤트 유지하고 추가)
+    container.addEventListener('click', function (e) {
+      if (e.target && e.target.classList.contains('remove-tail-btn')) {
+        e.target.closest('.tail-question').remove();
+        checkTailStatus();  // 삭제 후 체크 상태 확인
+      }
+    });
+
+    // 꼬리 질문 존재 여부로 체크박스 자동 컨트롤하는 함수
+    function checkTailStatus() {
+      const tailCount = container.querySelectorAll('.tail-question').length;
+      tailCheckBox.checked = tailCount > 0;
+    }
+
+    // 혹시 수동으로도 textarea 입력할 때 체크하고 싶으면 아래 추가 (선택)
+    // container.addEventListener('input', checkTailStatus);
+
+
   </script>
 </body>
+
 </html>

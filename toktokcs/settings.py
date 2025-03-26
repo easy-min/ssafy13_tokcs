@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-fz^3+$anci5#!qz+3ij$$7%&hg_l)frr!rz!r#kt$a2$2)1!zh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['18.222.36.248', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['18.222.36.248', 'localhost', '127.0.0.1','*']
 
 
 # Application definition
@@ -129,3 +129,35 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            # Optional: Formatter를 지정해도 됨
+            'formatter': 'verbose',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # DEBUG 레벨까지 출력되도록 설정
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        # 필요시, 프로젝트의 다른 모듈 로거 설정도 추가
+    },
+}
+

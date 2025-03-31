@@ -1,9 +1,8 @@
-# tokcs/models.py
 from django.db import models
 from django.contrib.auth.models import User
+import re
 
 def get_default_topic():
-    # 주의: 이 함수는 마이그레이션 시 기본 Topic의 ID를 반환합니다.
     # 예를 들어, "컴퓨터구조와운영체제" Topic이 미리 만들어져 있고 그 ID가 1이라고 가정합니다.
     return 1
 
@@ -28,7 +27,7 @@ class Chapter(models.Model):
         on_delete=models.CASCADE,
         related_name="chapters",
         verbose_name="주제",
-        default=get_default_topic  # 기본 Topic ID를 1로 설정 (Topic with ID 1은 "컴퓨터구조와운영체제"여야 함)
+        default=get_default_topic
     )
     name = models.CharField(max_length=100, verbose_name="단원 이름")
     order = models.IntegerField(default=0, verbose_name="순서")
@@ -37,7 +36,13 @@ class Chapter(models.Model):
     def __str__(self):
         return f"[{self.topic.name}] {self.name}"
 
-# 나머지 모델은 그대로 유지합니다.
+def highlight_keywords(answer_text, keywords):
+    for kw in keywords:
+        if kw.strip():
+            answer_text = re.sub(f'({re.escape(kw.strip())})', r'<span style="color:blue; font-weight:bold;">\1</span>', answer_text)
+    return answer_text
+
+
 class QuizQuestion(models.Model):
     QUESTION_TYPE_CHOICES = [
         ('objective', '객관식'),
@@ -53,7 +58,6 @@ class QuizQuestion(models.Model):
         blank=True,
         verbose_name="주제"
     )
-    # 문제를 단원과 연결합니다.
     chapter = models.ForeignKey(
         Chapter,
         null=True,
@@ -61,7 +65,6 @@ class QuizQuestion(models.Model):
         on_delete=models.SET_NULL,
         verbose_name="단원"
     )
-    
     question_text = models.TextField(verbose_name="질문 내용")
     answer_text = models.TextField(
         verbose_name="모범 답안", blank=True,
@@ -77,7 +80,6 @@ class QuizQuestion(models.Model):
         verbose_name="문제 유형"
     )
     is_tail_question = models.BooleanField(default=False, verbose_name="꼬리 질문 여부")
-    
     parent_question = models.ForeignKey(
         'self',
         null=True,
@@ -86,7 +88,6 @@ class QuizQuestion(models.Model):
         related_name='child_questions',
         verbose_name="부모 질문"
     )
-    
     explanation = models.TextField(verbose_name="해설", blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
     
@@ -96,7 +97,6 @@ class QuizQuestion(models.Model):
     def save(self, *args, **kwargs):
         if not self.code:
             if self.is_tail_question and self.parent_question:
-                # 꼬리 질문 코드 생성
                 siblings = QuizQuestion.objects.filter(
                     parent_question=self.parent_question, is_tail_question=True
                 )
@@ -110,7 +110,6 @@ class QuizQuestion(models.Model):
                     last_num = 0
                 self.code = f"{self.parent_question.code}-{last_num + 1}"
             else:
-                # 일반 문제 코드 생성
                 if self.chapter and self.chapter.topic:
                     prefix = self.chapter.topic.name[:2].upper()
                 else:
@@ -118,7 +117,6 @@ class QuizQuestion(models.Model):
                 last_question = QuizQuestion.objects.filter(
                     is_tail_question=False, chapter=self.chapter
                 ).order_by('id').last()
-
                 if last_question and last_question.code.startswith(prefix):
                     try:
                         last_number = int(last_question.code.replace(prefix, ""))
@@ -127,16 +125,12 @@ class QuizQuestion(models.Model):
                 else:
                     last_number = 0
                 self.code = f"{prefix}{last_number + 1:03d}"
-
-        # 중복 방지 루프
         counter = 1
         original_code = self.code
         while QuizQuestion.objects.filter(code=self.code).exists():
             self.code = f"{original_code}-{counter}"
             counter += 1
-
         super().save(*args, **kwargs)
-
 
 class QuizChoice(models.Model):
     question = models.ForeignKey(
@@ -168,6 +162,57 @@ class SubjectiveAnswer(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.question.code}"
+    
+    @property
+    def final_score(self):
+        if hasattr(self, 'grading'):
+            return self.grading.final_score()
+        return self.score
+
+class SubjectiveGrading(models.Model):
+    answer = models.OneToOneField(SubjectiveAnswer, on_delete=models.CASCADE, related_name='grading')
+    auto_keywords_matched = models.TextField(blank=True, help_text="자동 채점 시 매칭된 키워드")
+    auto_keywords_missed = models.TextField(blank=True, help_text="자동 채점 시 누락된 키워드")
+    auto_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    manually_corrected = models.BooleanField(default=False)
+    manual_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    corrected_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='manual_graders')
+    corrected_at = models.DateTimeField(null=True, blank=True)
+    correction_memo = models.TextField(blank=True)
+
+    def final_score(self):
+        return self.manual_score if self.manually_corrected else self.auto_score
+
+
+def auto_grade_subjective_answer(answer: SubjectiveAnswer):
+    expected_keywords = [kw.strip() for kw in answer.question.keywords.split(',') if kw.strip()]
+    user_text = answer.answer_text.lower()
+    matched_list = [kw.strip() for kw in expected_keywords if kw.lower() in user_text]
+    missed_list = [kw.strip() for kw in expected_keywords if kw.lower() not in user_text]
+    missed_count = len(missed_list)
+    if missed_count == 0:
+        score = 100
+    elif missed_count == 1:
+        score = 70
+    elif missed_count == 2:
+        score = 40
+    else:
+        score = 0
+    highlighted = highlight_keywords(answer.answer_text, expected_keywords)
+    answer.answer_text = highlighted
+    answer.score = score
+    answer.graded = True
+    answer.save()
+    SubjectiveGrading.objects.update_or_create(
+        answer=answer,
+        defaults={
+            'auto_keywords_matched': ','.join(matched_list),
+            'auto_keywords_missed': ','.join(missed_list),
+            'auto_score': score,
+        }
+    )
+    return score
 
 class DailyQuizPool(models.Model):
     day_number = models.IntegerField(unique=True)
@@ -175,18 +220,55 @@ class DailyQuizPool(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     topics = models.ManyToManyField('Topic', blank=True)
     chapters = models.ManyToManyField('Chapter', blank=True)
-    question_bank = models.ManyToManyField('QuizQuestion', blank=True)  # 문제은행
-    num_questions_per_user = models.IntegerField(default=20)  # 유저당 몇 개 출제
-
+    question_bank = models.ManyToManyField('QuizQuestion', blank=True)
+    num_questions_per_user = models.IntegerField(default=20)
+    
     def __str__(self):
         return f"Day {self.day_number} - {self.title}"
-
 
 class UserDailyQuiz(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     day_quiz = models.ForeignKey(DailyQuizPool, on_delete=models.CASCADE)
     assigned_questions = models.ManyToManyField('QuizQuestion')
     assigned_at = models.DateTimeField(auto_now_add=True)
-    total_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # 추가된 필드
+    total_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
     def __str__(self):
         return f"{self.user.username} - Day {self.day_quiz.day_number}"
+
+def grade_single_answer(answer_obj):
+    """
+    주관식 답안을 평가하여 점수를 산출하고, SubjectiveGrading 레코드를 생성/업데이트 합니다.
+    """
+    answer_text = answer_obj.answer_text
+    keywords = answer_obj.question.keywords.split(",") if answer_obj.question.keywords else []
+    total_keywords = len(keywords)
+    matched = sum(1 for kw in keywords if kw.strip() in answer_text)
+    missed = total_keywords - matched
+
+    if missed == 0:
+        score = 100
+    elif missed == 1:
+        score = 30
+    elif missed == 2:
+        score = 10
+    else:
+        score = 0
+
+    answer_obj.answer_text = highlight_keywords(answer_text, keywords)
+    answer_obj.score = score
+    answer_obj.graded = True
+    answer_obj.save()
+
+    matched_list = [kw.strip() for kw in keywords if kw.strip() in answer_text]
+    missed_list = [kw.strip() for kw in keywords if kw.strip() not in answer_text]
+
+    SubjectiveGrading.objects.update_or_create(
+        answer=answer_obj,
+        defaults={
+            'auto_keywords_matched': ','.join(matched_list),
+            'auto_keywords_missed': ','.join(missed_list),
+            'auto_score': score,
+        }
+    )
+    return score

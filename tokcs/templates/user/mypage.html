@@ -7,27 +7,136 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* 너가 작성한 CSS 그대로 사용 */
-    body { background: #f9f9f9; font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif; color: #333; margin: 0; padding: 0; }
-    .mypage-container { max-width: 720px; margin: 40px auto; padding: 20px; }
-    h1 { font-size: 28px; margin-bottom: 20px; font-weight: 700; }
-    .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
-    .card h2 { font-size: 20px; margin-bottom: 16px; font-weight: 600; }
-    .card ul { list-style: none; padding: 0; margin: 0; }
-    .card li { padding: 16px 0; border-bottom: 1px solid #eee; transition: background-color 0.3s; }
-    .card li:hover { background-color: #f5f7fa; }
-    .card li:last-child { border-bottom: none; }
-    .question-title { font-size: 16px; font-weight: 600; color: #222; }
-    .date { font-size: 13px; color: #999; margin-top: 4px; }
-    .status { margin-top: 8px; font-size: 14px; font-weight: 500; }
-    .status.pass { color: #2e7d32; }
-    .status.fail { color: #d32f2f; }
-    .empty { color: #999; padding: 16px 0; }
-    .score { font-size: 16px; font-weight: bold; }
-    .top-nav { position: sticky; top: 0; z-index: 999; background: #ffffff; padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-    .user-info .user-name { font-size: 18px; font-weight: 700; }
-    .user-info .profile-link { font-size: 14px; color: #1e88e5; text-decoration: none; margin-top: 4px; display: inline-block; }
-    .nav-actions .nav-btn { display: inline-block; background-color: #1e88e5; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-left: 10px; transition: background-color 0.3s; }
-    .nav-actions .nav-btn:hover { background-color: #1565c0; }
+    body {
+      background: #f9f9f9;
+      font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .mypage-container {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .card li {
+      padding: 16px 0;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.3s;
+    }
+
+    .card li:hover {
+      background-color: #f5f7fa;
+    }
+
+    .card li:last-child {
+      border-bottom: none;
+    }
+
+    .question-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .date {
+      font-size: 13px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status.pass {
+      color: #2e7d32;
+    }
+
+    .status.fail {
+      color: #d32f2f;
+    }
+
+    .empty {
+      color: #999;
+      padding: 16px 0;
+    }
+
+    .score {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: #ffffff;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-info .user-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .user-info .profile-link {
+      font-size: 14px;
+      color: #1e88e5;
+      text-decoration: none;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .nav-actions .nav-btn {
+      display: inline-block;
+      background-color: #1e88e5;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 10px;
+      transition: background-color 0.3s;
+    }
+
+    .nav-actions .nav-btn:hover {
+      background-color: #1565c0;
+    }
   </style>
 </head>
 
@@ -54,8 +163,12 @@
         {% if user_quizzes %}
         {% for quiz in user_quizzes %}
         <li>
-          <div class="score">Day {{ quiz.day_quiz.day_number }} - {{ quiz.day_quiz.title }} | 점수: {{ quiz.total_score|default:"(채점 전)" }}점</div>
-          <div class="date">응시일: {{ quiz.created_at|date:"Y년 m월 d일" }}</div>
+          <!-- 링크를 걸어서 Daily Quiz 상세 페이지로 이동 -->
+          <a href="{% url 'quiz_result' day_quiz_id=quiz.day_quiz.id %}">
+            <div class="score">Day {{ quiz.day_quiz.day_number }} - {{ quiz.day_quiz.title }} | 점수: {{
+              quiz.total_score|default:"(채점 전)" }}점</div>
+            <div class="date">응시일: {{ quiz.created_at|date:"Y년 m월 d일" }}</div>
+          </a>
         </li>
         {% endfor %}
         {% else %}
@@ -63,6 +176,7 @@
         {% endif %}
       </ul>
     </div>
+
 
     <!-- ✅ 내가 만든 문제 -->
     <div class="card">

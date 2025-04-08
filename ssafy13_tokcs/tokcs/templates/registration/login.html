@@ -1,0 +1,91 @@
+<!-- templates/registration/login.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 - ToktokCS</title>
+  <style>
+    /* 기본 리셋 및 배경 색상 */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background-color: #f7f7f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    /* 카드 형태의 컨테이너 */
+    .login-card {
+      background-color: #ffffff;
+      width: 360px;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .login-card h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 24px;
+      color: #333;
+    }
+    /* 폼 요소 스타일 */
+    .login-card form {
+      display: flex;
+      flex-direction: column;
+    }
+    .login-card form input {
+      width: 100%;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .login-card form button {
+      padding: 12px 16px;
+      background-color: #007bff;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .login-card form button:hover {
+      background-color: #0056b3;
+    }
+    /* 추가 링크 스타일 */
+    .login-card .link {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    .login-card .link a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .login-card .link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>로그인</h1>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">로그인</button>
+    </form>
+    <div class="link">
+      계정이 없으신가요? <a href="{% url 'signup' %}">회원가입</a>
+    </div>
+  </div>
+</body>
+</html>

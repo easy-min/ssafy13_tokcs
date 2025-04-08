@@ -1,0 +1,49 @@
+<!-- templates/user/profile.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>내 정보 - TOKCS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+        }
+        .profile-container {
+            width: 50%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .profile-header {
+            text-align: center;
+        }
+        .profile-header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .profile-info {
+            margin-top: 20px;
+        }
+        .profile-info p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>{{ request.user.username }}님의 프로필</h1>
+        </div>
+        <div class="profile-info">
+            <p>이메일: {{ request.user.email }}</p>
+            <p>가입일: {{ request.user.date_joined|date:"Y년 m월 d일" }}</p>
+            <p>마지막 로그인: {{ request.user.last_login|date:"Y년 m월 d일" }}</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>문제 세트 목록</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light py-5">
+  <div class="container">
+    <h1 class="mb-4">📋 Day 문제 세트 목록</h1>
+    <table class="table table-bordered bg-white shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th>Day 번호</th>
+          <th>제목</th>
+          <th>문제 수</th>
+          <th>생성일</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for quiz in quiz_sets %}
+        <tr>
+          <td>Day {{ quiz.day_number }}</td>
+          <td>{{ quiz.title }}</td>
+          <td>{{ quiz.question_bank.count }} 문제</td>
+          <td>{{ quiz.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">아직 생성된 문제 세트가 없습니다.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

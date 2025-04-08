@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Daily Quiz 결과 상세</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary-color: #1e88e5;
+      --background-color: #f7f9fc;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --subtext-color: #555;
+      --border-radius: 12px;
+      --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--background-color);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .header p {
+      font-size: 16px;
+      color: var(--subtext-color);
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-bottom: 20px;
+    }
+    .card:not(:last-child) {
+      margin-bottom: 30px;
+    }
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: var(--text-color);
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+    .section {
+      margin: 15px 0;
+    }
+    .section strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--subtext-color);
+      font-size: 14px;
+    }
+    .section p {
+      margin: 0;
+      font-size: 16px;
+    }
+    .score {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    /* 버튼 스타일 (예: 프린트하기) */
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: var(--primary-color);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Daily Quiz 결과 상세</h1>
+      <p>
+        Day {{ user_quiz.day_quiz.day_number }} - {{ user_quiz.day_quiz.title }}<br>
+        최종 점수: {{ user_quiz.total_score }}점
+      </p>
+    </div>
+
+    <ol>
+      {% for answer in answers %}
+      <li class="card">
+        <h2>문제 {{ forloop.counter }}</h2>
+        <div class="section">
+          <strong>문제</strong>
+          <p>{{ answer.question.question_text }}</p>
+        </div>
+        <div class="section">
+          <strong>내 답변</strong>
+          <p>{{ answer.answer_text|safe }}</p>
+        </div>
+        <div class="section">
+          <strong>모범 답안</strong>
+          <p>{{ answer.question.answer_text }}</p>
+        </div>
+        {% if answer.question.explanation %}
+        <div class="section">
+          <strong>해설</strong>
+          <p>{{ answer.question.explanation }}</p>
+        </div>
+        {% endif %}
+        <div class="section">
+          <strong>내 점수</strong>
+          <p class="score">{{ answer.final_score }}점</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+
+    <a href="{% url 'mypage' %}" class="back-link">← 마이페이지로 돌아가기</a>
+    <!-- 필요시 추가 버튼: 예를 들어 프린트하기 -->
+    <a href="javascript:window.print()" class="btn">프린트하기</a>
+  </div>
+</body>
+</html>

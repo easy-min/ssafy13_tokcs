@@ -9,8 +9,8 @@ __pycache__/
 
 # ===================================
 # 💼 PyCharm (Professional)
-# ===================================
-../.idea/
+# ==================================
+.idea/
 *.iml
 
 # ===================================
@@ -35,7 +35,7 @@ local_settings.py # 환경 구분용 설정파일 있다면
 db.sqlite3
 */migrations/*.pyc
 */migrations/__pycache__/
-!**/migrations/__init__.py
+!ssafy13_tokcs/tokcs/migrations/__init__.py
 */migrations/__pycache__/
 */migrations/*.pyc
 

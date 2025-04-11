@@ -120,3 +120,7 @@ def grade_problem_set(problem_set, user):
             except Exception as e:
                 pass
     return total_score
+
+# 서비스 모듈 내에 정의 (예: question/services/problem_set_grading_service.py)
+def get_user_score_for_problem_set(user, problem_set):
+    return grade_problem_set(problem_set, user)

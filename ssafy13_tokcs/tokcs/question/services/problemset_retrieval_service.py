@@ -3,7 +3,7 @@
 from datetime import date
 from django.db.models import Prefetch
 from question.models.problemSet import ProblemSet, ProblemSetQuestion
-from question.models.answer import ObjectiveAnswer, SubjectiveAnswer
+from question.models.choice import ObjectiveAnswer, SubjectiveAnswer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

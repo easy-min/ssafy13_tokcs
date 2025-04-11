@@ -4,12 +4,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 import datetime
 
-# 올바른 import 구문: question 폴더의 services 하위에 있는 문제 세트 서비스를 가져옴
-from question.services.problemset_retrieval_service import (
-    get_active_problem_sets,         # 만약 존재하는 서비스 함수라면
-    get_problem_set_details,         # 문제 세트 상세 조회 서비스 함수
-    get_user_recent_submissions      # 최근 제출 내역 조회 서비스 함수
+# 올바른 import 구문: 각 함수들이 정의된 파일에서 가져옵니다.
+from question.services.problemSet_retrieval_service import (
+    get_active_problem_sets,
+    get_problem_set_details,
+    get_user_recent_submissions
 )
+from question.services.problemSet_service import create_random_problem_set  # 추가
 
 # 관리자 권한 체크 함수
 def is_admin(user):
@@ -21,7 +22,7 @@ def create_random_problem_set_view(request):
     if request.method == 'POST':
         try:
             topic_id = int(request.POST.get('topic_id'))
-            # chapter_ids는 예: "1,3,5" 형식의 문자열로 받았다고 가정합니다.
+            # chapter_ids는 예: "1,3,5" 형식의 문자열
             chapter_ids_str = request.POST.get('chapter_ids', '')
             chapter_ids = [int(ch.strip()) for ch in chapter_ids_str.split(',') if ch.strip()]
             total_questions = int(request.POST.get('total_questions'))

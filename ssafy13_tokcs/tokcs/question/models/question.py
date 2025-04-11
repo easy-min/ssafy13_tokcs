@@ -12,7 +12,7 @@ class BaseQuestion(models.Model):
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, verbose_name="문제 유형")
     content = models.TextField(verbose_name="문제 내용")
     explanation = models.TextField(blank=True, verbose_name="해설")
-    score = models.PositiveIntegerField(default=5, verbose_name="배점")
+    score = models.PositiveIntegerField(null=True, blank = True, verbose_name="배점")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

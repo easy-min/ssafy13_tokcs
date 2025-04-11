@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>객관식 문제 출제</title>
+  <!-- Bootstrap 5 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container my-5">
+    <h1 class="mb-4">객관식 문제 출제</h1>
+    
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <ul>
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <!-- 단원 선택 -->
+      <div class="mb-3">
+        {{ form.chapter.label_tag }}
+        {{ form.chapter }}
+      </div>
+      <!-- 문제 내용 -->
+      <div class="mb-3">
+        {{ form.content.label_tag }}
+        {{ form.content }}
+      </div>
+      <!-- 해설 -->
+      <div class="mb-3">
+        {{ form.explanation.label_tag }}
+        {{ form.explanation }}
+      </div>
+      <!-- 배점 -->
+      <div class="mb-3">
+        {{ form.score.label_tag }}
+        {{ form.score }}
+      </div>
+      <!-- 객관식 선택지 (콤마로 구분) -->
+      <div class="mb-3">
+        {{ form.choices_text.label_tag }}
+        {{ form.choices_text }}
+        <div class="form-text">예: 답안, 오답1, 오답2, 오답3 (첫 번째 항목을 정답으로 지정)</div>
+      </div>
+      <button type="submit" class="btn btn-primary">문제 등록하기</button>
+    </form>
+  </div>
+  
+  <!-- Bootstrap 5 JS Bundle CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

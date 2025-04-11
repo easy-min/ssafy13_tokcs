@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}문제 세트 현황 | TokCS{% endblock %}
+
+{% block content %}
+<div class="content-card">
+  <h2>문제 세트 현황</h2>
+  
+  <!-- 탭 메뉴 -->
+  <div class="tab-menu">
+    <button class="tab-link active" data-tab="all">전체</button>
+    <button class="tab-link" data-tab="unsolved">미완료</button>
+    <button class="tab-link" data-tab="solved">완료</button>
+  </div>
+
+  <!-- 탭별 컨텐츠 영역 -->
+  <div class="tab-content active" id="tab-all">
+    <!-- 전체 문제 세트 목록 (날짜순 정렬) -->
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>문제 세트 제목</th>
+          <th>기간</th>
+          <th>상태</th> 
+          <!-- 이미 푼 경우 점수 표시, 안 푼 경우 표시 X -->
+        </tr>
+      </thead>
+      <tbody>
+        {% for ps in all_problem_sets %}
+        <tr>
+          <!-- 문제 세트 제목 - 링크로 이동 -->
+          <td>
+            <a href="{% url 'problem_set_detail' ps.id %}">
+              {{ ps.title }}
+            </a>
+          </td>
+          <!-- 기간: scheduled_date ~ close_date -->
+          <td>{{ ps.scheduled_date }} ~ {{ ps.close_date }}</td>
+          <!-- 상태 표시 -->
+          <td>
+            {% if ps.user_solved %}  {# 이미 푼 문제 세트인 경우 #}
+              {% if ps.score and ps.score >= ps.pass_threshold %}
+                <span class="score pass">{{ ps.score }}점 (PASS)</span>
+              {% else %}
+                <span class="score fail">
+                  {% if ps.score != None %}
+                    {{ ps.score }}점 (FAIL)
+                  {% else %}
+                    0점 (FAIL)
+                  {% endif %}
+                </span>
+              {% endif %}
+            {% else %}
+              <span class="unsolved">미완료</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">문제 세트가 없습니다.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tab-content" id="tab-unsolved">
+    <!-- 아직 안 푼 문제 세트 목록 -->
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>문제 세트 제목</th>
+          <th>기간</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ps in unsolved_problem_sets %}
+        <tr>
+          <td>
+            <a href="{% url 'problem_set_detail' ps.id %}">
+              {{ ps.title }}
+            </a>
+          </td>
+          <td>{{ ps.scheduled_date }} ~ {{ ps.close_date }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2">미완료 문제 세트가 없습니다.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tab-content" id="tab-solved">
+    <!-- 이미 푼 문제 세트 목록 -->
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>문제 세트 제목</th>
+          <th>기간</th>
+          <th>점수 / 결과</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ps in solved_problem_sets %}
+        <tr>
+          <td>
+            <a href="{% url 'problem_set_detail' ps.id %}">
+              {{ ps.title }}
+            </a>
+          </td>
+          <td>{{ ps.scheduled_date }} ~ {{ ps.close_date }}</td>
+          <td>
+            {% if ps.score and ps.score >= ps.pass_threshold %}
+              <span class="score pass">{{ ps.score }}점 (PASS)</span>
+            {% else %}
+              <span class="score fail">
+                {% if ps.score != None %}
+                  {{ ps.score }}점 (FAIL)
+                {% else %}
+                  0점 (FAIL)
+                {% endif %}
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">완료된 문제 세트가 없습니다.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 간단한 JS로 탭 전환 (CSS 클래스 on/off)
+document.querySelectorAll('.tab-link').forEach(btn => {
+  btn.addEventListener('click', function() {
+    // 모든 탭 링크에서 active 제거
+    document.querySelectorAll('.tab-link').forEach(x => x.classList.remove('active'));
+    // 모든 탭 콘텐츠에서 active 제거
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+
+    // 현재 버튼, 해당하는 탭 컨텐츠에 active 추가
+    this.classList.add('active');
+    const tabId = this.getAttribute('data-tab');
+    const target = document.getElementById('tab-' + tabId);
+    if (target) {
+      target.classList.add('active');
+    }
+  });
+});
+</script>
+{% endblock %}

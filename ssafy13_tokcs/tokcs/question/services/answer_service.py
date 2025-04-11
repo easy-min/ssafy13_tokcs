@@ -8,8 +8,12 @@ from question.models.question import (
 )
 from question.models.choice import ObjectiveAnswer, SubjectiveAnswer
 
-# --- 유틸리티 함수: 텍스트 정규화 (공백을 제거하고 소문자로 변환)
+# --- 유틸리티 함수: 텍스트 정규화
 def normalize(text: str) -> str:
+    """
+    텍스트에서 공백을 제거하고 소문자로 변환.
+    주관식 채점 시 문자열 비교의 일관성을 위해 사용.
+    """
     return re.sub(r'\s+', '', text).lower()
 
 # --- 주관식 문제 채점 함수 (grade_answer)
@@ -83,3 +87,36 @@ def grade_subjective_answer(subjective_answer: SubjectiveAnswer) -> tuple[int, l
     subjective_answer.matched_keywords = matched_keywords
     subjective_answer.save()
     return score, matched_keywords
+
+
+# services/problem_set_grading_service.py
+
+def grade_problem_set(problem_set, user):
+    """
+    특정 문제 세트에 대해, 지정 사용자의 응답들을 기반으로 전체 점수를 계산합니다.
+    
+    1. 문제 세트에 포함된 모든 문제(ProblemSetQuestion)를 순서대로 가져옵니다.
+    2. 각 문제에 대해, 사용자의 응답(객관식은 ObjectiveAnswer, 주관식은 SubjectiveAnswer)을 조회하고,
+       해당 문제의 채점된 점수를 합산합니다.
+    3. 전체 점수를 반환합니다.
+    """
+    total_score = 0
+    ps_questions = problem_set.problems.all().order_by('order')
+    
+    for psq in ps_questions:
+        question = psq.question
+        if question.question_type == 'MCQ':
+            try:
+                answer = question.objectiveanswer_set.filter(user=user).first()
+                if answer:
+                    total_score += answer.score
+            except Exception as e:
+                pass  # 응답 없으면 0점 처리
+        elif question.question_type == 'SA':
+            try:
+                answer = question.subjectiveanswer_set.filter(user=user).first()
+                if answer:
+                    total_score += answer.score
+            except Exception as e:
+                pass
+    return total_score

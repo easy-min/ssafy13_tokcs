@@ -2,7 +2,7 @@
 
 import re
 from django.core.exceptions import ObjectDoesNotExist
-from question.models.questions import (
+from question.models.question import (
     ObjectiveQuestion, SubjectiveQuestion, Choice, 
     QuestionKeywordMapping
 )

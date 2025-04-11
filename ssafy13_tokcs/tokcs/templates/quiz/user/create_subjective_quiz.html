@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <title>주관식 문제 입력 - ToktokCS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 기본 디자인에 약간의 부트스트랩 느낌을 주기 위한 CSS (원하는 경우 CDN 사용도 가능) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     /* 기본 리셋 */
     * {
@@ -26,7 +28,7 @@
     .card {
       background-color: #fff;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       padding: 30px 24px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -35,7 +37,7 @@
     h1 {
       text-align: center;
       margin-bottom: 24px;
-      font-size: 22px;
+      font-size: 24px;
       color: #333;
     }
 
@@ -149,7 +151,7 @@
     <form method="post" action="{% url 'create_subjective_quiz' %}">
       {% csrf_token %}
 
-      <!-- 주제 선택 (현재 옵션은 하나로 고정) -->
+      <!-- 주제 선택 (예: Dropdown: Topic 목록) -->
       <label for="topic">주제</label>
       <select id="topic" name="topic" required>
         {% for topic in topics %}
@@ -157,7 +159,7 @@
         {% endfor %}
       </select>
 
-      <!-- 단원 선택 (해당 주제에 속한 단원 목록) -->
+      <!-- 단원 선택 (선택된 주제에 따른 Chapter 목록) -->
       <label for="chapter">단원 선택</label>
       <select id="chapter" name="chapter" required>
         {% for chapter in chapters %}
@@ -168,24 +170,29 @@
       <!-- 문제 코드는 자동 생성됨 안내 -->
       <p class="info">문제 코드는 자동 생성됩니다. (예: "OS" 접두어 사용)</p>
 
+      <!-- 질문 내용 -->
       <label for="question_text">질문 내용</label>
       <textarea id="question_text" name="question_text" placeholder="질문 내용을 입력하세요" required></textarea>
 
+      <!-- 모범 답안 -->
       <label for="answer_text">모범 답안</label>
       <textarea id="answer_text" name="answer_text" placeholder="모범 답안을 입력하세요" required></textarea>
 
+      <!-- 키워드 입력 -->
       <label for="keywords">주요 키워드</label>
       <input type="text" id="keywords" name="keywords" placeholder="예: 중앙 처리 장치, 명령어 해석, 실행">
 
+      <!-- 해설 (선택) -->
       <label for="explanation">해설 (선택)</label>
       <textarea id="explanation" name="explanation" placeholder="문제 해설을 입력하세요"></textarea>
 
+      <!-- 꼬리 질문 여부 체크 -->
       <div class="checkbox-group">
         <input type="checkbox" id="is_tail_question" name="is_tail_question">
         <label for="is_tail_question">꼬리 질문 여부</label>
       </div>
 
-      <!-- 주관식 문제임을 나타내는 숨은 입력 -->
+      <!-- 숨은 입력: 주관식 문제임을 나타냄 -->
       <input type="hidden" name="question_type" value="subjective">
 
       <!-- 꼬리 질문들을 담을 컨테이너 -->
@@ -216,49 +223,36 @@
     </div>
   </template>
 
+  <!-- Bootstrap 5 JS Bundle (선택: 디자인 편의를 위해) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- 꼬리 질문 추가/삭제 스크립트 -->
   <script>
     const addTailBtn = document.getElementById('add-tail-btn');
     const container = document.getElementById('tail-questions-container');
     const template = document.getElementById('tail-question-template').content;
-
-    addTailBtn.addEventListener('click', function () {
-      const clone = document.importNode(template, true);
-      container.appendChild(clone);
-    });
-
-    container.addEventListener('click', function (e) {
-      if (e.target && e.target.classList.contains('remove-tail-btn')) {
-        e.target.closest('.tail-question').remove();
-      }
-    });
-
     const tailCheckBox = document.getElementById('is_tail_question');
 
-    // 꼬리 질문 추가 이벤트
-    addTailBtn.addEventListener('click', function () {
-      const clone = document.importNode(template, true);
-      container.appendChild(clone);
-      checkTailStatus();  // 꼬리 질문 추가 후 체크 상태 확인
-    });
-
-    // 꼬리 질문 삭제 이벤트 (기존 삭제 이벤트 유지하고 추가)
-    container.addEventListener('click', function (e) {
-      if (e.target && e.target.classList.contains('remove-tail-btn')) {
-        e.target.closest('.tail-question').remove();
-        checkTailStatus();  // 삭제 후 체크 상태 확인
-      }
-    });
-
-    // 꼬리 질문 존재 여부로 체크박스 자동 컨트롤하는 함수
     function checkTailStatus() {
+      // 꼬리 질문이 존재하면 체크박스 자동 체크
       const tailCount = container.querySelectorAll('.tail-question').length;
       tailCheckBox.checked = tailCount > 0;
     }
 
-    // 혹시 수동으로도 textarea 입력할 때 체크하고 싶으면 아래 추가 (선택)
-    // container.addEventListener('input', checkTailStatus);
+    // 꼬리 질문 추가 버튼 클릭 시
+    addTailBtn.addEventListener('click', function () {
+      const clone = document.importNode(template, true);
+      container.appendChild(clone);
+      checkTailStatus();
+    });
 
-
+    // 꼬리 질문 삭제 버튼 이벤트
+    container.addEventListener('click', function (e) {
+      if (e.target && e.target.classList.contains('remove-tail-btn')) {
+        e.target.closest('.tail-question').remove();
+        checkTailStatus();
+      }
+    });
   </script>
 </body>
 

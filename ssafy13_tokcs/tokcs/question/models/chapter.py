@@ -1,5 +1,5 @@
 from django.db import models
-from quiz.models.topic import Topic
+from question.models.topic import Topic
 
 def get_default_topic():
     return Topic.objects.first() #topic 한 개 이상 있어야 오류 안남

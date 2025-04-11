@@ -8,7 +8,6 @@ class BaseQuestion(models.Model):
         ('MCQ', '객관식'),
         ('SA', '주관식'),
     ]
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name="주제") # 1:N
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name="단원") # 1:N
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, verbose_name="문제 유형")
     content = models.TextField(verbose_name="문제 내용")

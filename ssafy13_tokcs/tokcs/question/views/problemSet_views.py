@@ -71,3 +71,41 @@ def problem_set_detail_view(request, ps_id):
 def user_recent_submissions_view(request):
     submissions = get_user_recent_submissions(request.user, limit=5)
     return render(request, 'problemset/user_recent_submissions.html', {'submissions': submissions})
+
+
+def problem_set_list_view(request):
+    # 1) 전체 문제 세트 (날짜순 정렬)
+    all_problem_sets = ProblemSet.objects.all().order_by('-scheduled_date')
+    
+    # 2) 현재 사용자 기준으로 "이미 푼 문제"와 "안 푼 문제" 구분
+    #    예) "이미 푼 문제"는 'score'가 존재한다든지, 특정 정답 제출이 있는지 등
+    user_solved_ids = set()  # 이미 푼 problem_set의 id 모음
+    
+    # 예시: 각 ProblemSet에 대해, user_solved = True/False, score = ...
+    # 실제로는 Answer, Submission 테이블을 조인 또는 aggregate 사용 가능
+    for ps in all_problem_sets:
+        # pseudo code
+        score = get_user_score_for_problem_set(request.user, ps)
+        ps.score = score if score is not None else 0
+        
+        # 패스 기준 점수 예시
+        ps.pass_threshold = 70
+        
+        # user_solved = True if 사용자 제출이 있고 점수가 존재할 때
+        if score is not None:
+            ps.user_solved = True
+            user_solved_ids.add(ps.id)
+        else:
+            ps.user_solved = False
+
+    # 미완료 (안 푼) 문제 세트
+    unsolved_problem_sets = [ps for ps in all_problem_sets if not ps.user_solved]
+    # 완료 (푼) 문제 세트
+    solved_problem_sets = [ps for ps in all_problem_sets if ps.user_solved]
+    
+    context = {
+        'all_problem_sets': all_problem_sets,
+        'unsolved_problem_sets': unsolved_problem_sets,
+        'solved_problem_sets': solved_problem_sets,
+    }
+    return render(request, 'problemset_list.html', context)

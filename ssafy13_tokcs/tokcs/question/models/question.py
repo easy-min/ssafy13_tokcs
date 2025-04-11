@@ -1,7 +1,7 @@
 
 from django.db import models
-from quiz.models.topic import Topic
-from quiz.models.chapter import Chapter
+from question.models.topic import Topic
+from question.models.chapter import Chapter
 
 class BaseQuestion(models.Model):
     QUESTION_TYPES = [

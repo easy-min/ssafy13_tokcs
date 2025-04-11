@@ -6,7 +6,7 @@ from question.models.question import (
     ObjectiveQuestion, SubjectiveQuestion, Choice, 
     QuestionKeywordMapping
 )
-from question.models.answer import ObjectiveAnswer, SubjectiveAnswer
+from question.models.choice import ObjectiveAnswer, SubjectiveAnswer
 
 # --- 유틸리티 함수: 텍스트 정규화 (공백을 제거하고 소문자로 변환)
 def normalize(text: str) -> str:

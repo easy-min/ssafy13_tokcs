@@ -1,0 +1,120 @@
+{% extends "admin_base.html" %}
+
+{% block title %}문제 셋 생성 | tokCS Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">문제 셋 생성</h2>
+  <form method="post" action="{% url 'admin_quizset_create' %}">
+    {% csrf_token %}
+    <!-- Row 1: Topic & Chapter 다중 선택 -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="topics" class="form-label">Topic 선택 (다중 선택)</label>
+        <select class="form-select" id="topics" name="topics" multiple required>
+          {% for topic in topics %}
+          <option value="{{ topic.id }}">{{ topic.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="chapters" class="form-label">Chapter 선택 (다중 선택)</label>
+        <select class="form-select" id="chapters" name="chapters" multiple required>
+          {% for chapter in chapters %}
+          <option value="{{ chapter.id }}" data-topic="{{ chapter.topic.id }}">{{ chapter.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <!-- Row 2: 그룹 & 제목 -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="group" class="form-label">적용 그룹 선택</label>
+        <select class="form-select" id="group" name="group" required>
+          {% for group in groups %}
+          <option value="{{ group.id }}">{{ group.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="title" class="form-label">문제 셋 제목</label>
+        <input type="text" class="form-control" id="title" name="title" placeholder="예: 2025년 4월 CS Quiz Set" required>
+      </div>
+    </div>
+    <!-- Row 3: 날짜 입력 -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="scheduled_date" class="form-label">시작 날짜</label>
+        <input type="date" class="form-control" id="scheduled_date" name="scheduled_date" required>
+      </div>
+      <div class="col-md-6">
+        <label for="close_date" class="form-label">마감 날짜</label>
+        <input type="date" class="form-control" id="close_date" name="close_date" required>
+      </div>
+    </div>
+    <!-- Row 4: 총점 및 문제 출제 비율 -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="total_score" class="form-label">총점</label>
+        <input type="number" class="form-control" id="total_score" name="total_score" value="100" required>
+      </div>
+      <div class="col-md-4">
+        <label for="objective_ratio" class="form-label">객관식 비율 (%)</label>
+        <input type="number" class="form-control" id="objective_ratio" name="objective_ratio" value="50" min="0" max="100" required>
+      </div>
+      <div class="col-md-4">
+        <label for="subjective_ratio" class="form-label">주관식 비율 (%)</label>
+        <input type="number" class="form-control" id="subjective_ratio" name="subjective_ratio" value="50" min="0" max="100" required>
+      </div>
+    </div>
+    <!-- Row 5: 출제 가능한 문제 유형 -->
+    <div class="mb-3">
+      <label class="form-label">출제 가능한 문제 유형</label>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="mcqType" name="question_types" value="MCQ" checked>
+        <label class="form-check-label" for="mcqType">객관식</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="subjectiveType" name="question_types" value="SA">
+        <label class="form-check-label" for="subjectiveType">주관식</label>
+      </div>
+    </div>
+    <div class="text-end">
+      <button type="submit" class="btn btn-success">문제 셋 생성하기</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Topic 선택 시 해당 Chapter만 보여주기
+  document.getElementById("topics").addEventListener("change", function() {
+    const selectedTopics = Array.from(this.selectedOptions).map(opt => opt.value);
+    const chapterSelect = document.getElementById("chapters");
+    for (let option of chapterSelect.options) {
+      if (selectedTopics.includes(option.getAttribute("data-topic"))) {
+        option.style.display = "block";
+      } else {
+        option.style.display = "none";
+      }
+    }
+  });
+  
+  // 객관식, 주관식 비율이 합 100%가 되도록 자동 조절
+  const objectiveInput = document.getElementById("objective_ratio");
+  const subjectiveInput = document.getElementById("subjective_ratio");
+  objectiveInput.addEventListener("input", adjustRatios);
+  subjectiveInput.addEventListener("input", adjustRatios);
+  
+  function adjustRatios() {
+    let objVal = parseInt(objectiveInput.value) || 0;
+    let subVal = parseInt(subjectiveInput.value) || 0;
+    if (document.activeElement === objectiveInput) {
+      subjectiveInput.value = 100 - objVal;
+    } else if (document.activeElement === subjectiveInput) {
+      objectiveInput.value = 100 - subVal;
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "question/user/base.html" %}
+
+{% block title %}주관식 문제 출제하기 - Tok! CS{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">주관식 문제 출제하기</h2>
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Topic 선택 -->
+    <div class="mb-3">
+      <label for="topic" class="form-label">Topic 선택</label>
+      <select class="form-control" id="topic" name="topic">
+        <option value="">-- Topic 선택 --</option>
+        {% for topic in topics %}
+        <option value="{{ topic.id }}">{{ topic.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Chapter 선택 -->
+    <div class="mb-3">
+      <label for="chapter" class="form-label">Chapter 선택</label>
+      <select class="form-control" id="chapter" name="chapter" required>
+        <option value="">-- Chapter 선택 --</option>
+        {% for chapter in chapters %}
+        <!-- data-topic="{{ chapter.topic_id }}" 를 통해 자바스크립트로 필터링 -->
+        <option value="{{ chapter.id }}" data-topic="{{ chapter.topic_id }}">{{ chapter.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- 문제 내용 -->
+    <div class="mb-3">
+      <label for="content" class="form-label">문제 내용</label>
+      <textarea class="form-control" id="content" name="content" rows="4" placeholder="주관식 문제를 입력하세요" required></textarea>
+    </div>
+
+    <!-- 답안 키워드 입력 -->
+    <div class="mb-3">
+      <label class="form-label">정답 키워드 (최소 1개, 추가/삭제 가능)</label>
+      <div id="keywordContainer">
+        <!-- 기본 1개 필드 -->
+        <div class="keyword-item mb-2 d-flex gap-2">
+          <input type="text" class="form-control" name="keywords[]" placeholder="정답 키워드 1" required>
+          <button type="button" class="btn btn-danger" onclick="removeKeyword(this)">삭제</button>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary mt-2" id="addKeywordBtn">키워드 추가하기</button>
+    </div>
+
+    <!-- 해설 (선택 사항) -->
+    <div class="mb-3">
+      <label for="explanation" class="form-label">해설 (선택 사항)</label>
+      <textarea class="form-control" id="explanation" name="explanation" rows="3" placeholder="해설을 입력하세요"></textarea>
+    </div>
+
+    <!-- 문제 점수 -->
+    <div class="mb-3">
+      <label for="score" class="form-label">문제 점수</label>
+      <input type="number" class="form-control" id="score" name="score" value="5" min="1">
+    </div>
+
+    <!-- 제출 버튼 영역 -->
+    <div class="d-flex justify-content-between">
+      <!-- 계속해서 문제 출제하기 -->
+      <button type="submit" name="submit_type" value="continue" class="btn btn-warning">
+        이어서 문제 계속 제출하기
+      </button>
+      <!-- 문제 제출 후 상세 페이지 이동 -->
+      <button type="submit" name="submit_type" value="finish" class="btn btn-primary">
+        문제 제출하기
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- JavaScript -->
+<script>
+  // Topic 선택 시, data-topic을 통해 Chapter 필터링
+  const topicSelect = document.getElementById("topic");
+  topicSelect.addEventListener("change", function() {
+    const topicId = this.value;
+    const chapterSelect = document.getElementById("chapter");
+    for (let i = 0; i < chapterSelect.options.length; i++) {
+      const opt = chapterSelect.options[i];
+      if (i === 0) {
+        opt.style.display = "block"; // 첫 번째 기본 옵션
+        continue;
+      }
+      if (opt.getAttribute("data-topic") === topicId) {
+        opt.style.display = "block";
+      } else {
+        opt.style.display = "none";
+      }
+    }
+    chapterSelect.selectedIndex = 0;
+  });
+
+  // 키워드 추가하기
+  const addKeywordBtn = document.getElementById('addKeywordBtn');
+  addKeywordBtn.addEventListener('click', function() {
+    const container = document.getElementById('keywordContainer');
+    const count = container.getElementsByClassName('keyword-item').length;
+    const newIdx = count + 1;
+    const div = document.createElement('div');
+    div.className = 'keyword-item mb-2 d-flex gap-2';
+    div.innerHTML = `
+      <input type="text" class="form-control" name="keywords[]" placeholder="정답 키워드 ${newIdx}" required>
+      <button type="button" class="btn btn-danger" onclick="removeKeyword(this)">삭제</button>
+    `;
+    container.appendChild(div);
+  });
+
+  // 키워드 삭제
+  function removeKeyword(button){
+    const container = document.getElementById('keywordContainer');
+    if(container.getElementsByClassName('keyword-item').length <= 1){
+      alert("최소 1개의 키워드는 유지되어야 합니다.");
+      return;
+    }
+    button.parentElement.remove();
+  }
+</script>
+{% endblock %}

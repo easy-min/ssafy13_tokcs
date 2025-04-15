@@ -1,0 +1,36 @@
+{% extends "question/user/base.html" %}
+
+{% block title %}주관식 문제 상세{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">주관식 문제 상세</h2>
+  
+  <div class="card">
+    <div class="card-header">
+      문제 정보
+    </div>
+    <div class="card-body">
+      <p class="card-text"><strong>문제 내용:</strong> {{ question.content }}</p>
+      {% if question.explanation %}
+      <p class="card-text"><strong>해설:</strong> {{ question.explanation }}</p>
+      {% endif %}
+      <p class="card-text"><strong>배점:</strong> {{ question.score }}</p>
+      <p class="card-text"><strong>단원:</strong> {{ question.chapter.name }}</p>
+    </div>
+    
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>정답 키워드:</strong></li>
+      {% with keywords=question.keywords.all %}
+        {% if keywords %}
+          {% for keyword in keywords %}
+            <li class="list-group-item">{{ keyword.word }}</li>
+          {% endfor %}
+        {% else %}
+          <li class="list-group-item">등록된 키워드가 없습니다.</li>
+        {% endif %}
+      {% endwith %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

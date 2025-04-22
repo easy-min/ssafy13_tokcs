@@ -1,6 +1,6 @@
 from datetime import date
-from tokcs.question.models.problemSet import ProblemSet
-from tokcs.question.services.problemSet_service import get_user_score_for_problem_set
+from tokcs.apps.question.models.problemSet import ProblemSet
+from tokcs.apps.question.services.problemSet_service import get_user_score_for_problem_set
 
 def get_calendar_problem_sets(year: int, month: int, user):
     """

@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
-from tokcs.question.models.chapter import Chapter
-from tokcs.question.models.question import (
+from tokcs.apps.question.models.chapter import Chapter
+from tokcs.apps.question.models.question import (
     ObjectiveQuestion,
     SubjectiveQuestion,
     Choice

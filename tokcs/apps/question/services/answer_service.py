@@ -1,10 +1,9 @@
 import re
 from django.core.exceptions import ObjectDoesNotExist
-from tokcs.question.models.question import (
-    ObjectiveQuestion, SubjectiveQuestion, Choice, 
-    QuestionKeywordMapping
+from tokcs.apps.question.models.question import (
+    SubjectiveQuestion, QuestionKeywordMapping
 )
-from tokcs.question.models.choice import ObjectiveAnswer, SubjectiveAnswer
+from tokcs.apps.question.models.choice import ObjectiveAnswer, SubjectiveAnswer
 
 # --- 유틸리티 함수: 텍스트 정규화
 def normalize(text: str) -> str:

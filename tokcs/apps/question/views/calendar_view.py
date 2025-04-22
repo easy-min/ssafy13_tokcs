@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from tokcs.question.services.calendar_service import get_calendar_problem_sets
+from tokcs.apps.question.services.calendar_service import get_calendar_problem_sets
 
 @login_required
 def calendar_view(request):

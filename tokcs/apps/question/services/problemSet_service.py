@@ -3,10 +3,9 @@ from datetime import datetime
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.contrib.contenttypes.models import ContentType
 
-from tokcs.question.models.problemSet import ProblemSet, ProblemSetQuestion
-from tokcs.question.models.chapter import Chapter
-from tokcs.question.models.question import ObjectiveQuestion, SubjectiveQuestion
-from tokcs.question.services.question_creation_service import (
+from tokcs.apps.question.models.problemSet import ProblemSet, ProblemSetQuestion
+from tokcs.apps.question.models.question import ObjectiveQuestion, SubjectiveQuestion
+from tokcs.apps.question.services.question_creation_service import (
     create_objective_question,
     create_subjective_question
 )
@@ -113,7 +112,7 @@ def create_random_problem_set(user,
     }
     problem_set = create_problem_set(user, ps_data)
     
-    from tokcs.question.models.chapter import Chapter
+    from tokcs.apps.question.models.chapter import Chapter
     chapters = Chapter.objects.filter(topic__id=topic_id, id__in=chapter_ids)
     if not chapters.exists():
         raise ValidationError("선택한 챕터가 존재하지 않습니다.")
@@ -129,7 +128,7 @@ def create_random_problem_set(user,
     psq_list = []
     for order, question in enumerate(selected_questions, start=1):
         content_type = ContentType.objects.get_for_model(question.__class__)
-        from tokcs.question.models.problemSet import ProblemSetQuestion
+        from tokcs.apps.question.models.problemSet import ProblemSetQuestion
         psq = ProblemSetQuestion.objects.create(
             problemset=problem_set,
             content_type=content_type,

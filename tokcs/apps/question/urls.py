@@ -4,9 +4,9 @@ from .views import (
     problemSet_views,
     subjective_question_views,
 )
-from tokcs.question.views.solve_views import solve_problems_view
+from tokcs.apps.question.views.solve_views import solve_problems_view
 from .views.create_problem_view import create_problem_view  # 새로 만든 뷰 import
-from .views.objective_question_views import create_objective_question_view, objective_question_detail_view  # 새로운 상세 뷰 추가
+from .views.objective_question_views import objective_question_detail_view  # 새로운 상세 뷰 추가
 from .views.subjective_question_views import subjective_question_detail_view
 
 urlpatterns = [

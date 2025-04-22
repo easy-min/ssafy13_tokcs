@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from tokcs.user.views import homepage_view, signup_view  # 여기에서 homepage_view와 signup_view 임포트
+from tokcs.apps.user import homepage_view, signup_view  # 여기에서 homepage_view와 signup_view 임포트
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [

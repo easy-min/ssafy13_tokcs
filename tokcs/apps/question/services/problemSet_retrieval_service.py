@@ -1,7 +1,6 @@
 from datetime import date
-from django.db.models import Prefetch
-from tokcs.question.models.problemSet import ProblemSet, ProblemSetQuestion
-from tokcs.question.models.choice import ObjectiveAnswer, SubjectiveAnswer
+from tokcs.apps.question.models.problemSet import ProblemSet
+from tokcs.apps.question.models.choice import ObjectiveAnswer, SubjectiveAnswer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -29,7 +28,6 @@ def get_problem_set_details(problem_set_id):
     return details
 
 def get_user_recent_submissions(user, limit=5):
-    from django.db.models import Q
     objective_qs = ObjectiveAnswer.objects.filter(user=user).select_related('question').order_by('-created_at')[:limit]
     subjective_qs = SubjectiveAnswer.objects.filter(user=user).select_related('question').order_by('-created_at')[:limit]
     submissions = list(objective_qs) + list(subjective_qs)

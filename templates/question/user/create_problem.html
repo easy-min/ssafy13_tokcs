@@ -1,0 +1,28 @@
+{% extends "question/user/base.html" %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- d-flex와 justify-content-evenly로 가로 배치를 지정, gap으로 카드 간 간격 확보 -->
+  <div class="d-flex justify-content-evenly align-items-start" style="gap: 80px; flex-wrap: nowrap;">
+    
+    <!-- 객관식 문제 카드 -->
+    <div class="card text-center" style="width: 400px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: none; border-radius: 12px; padding: 40px;">
+      <h3 class="mb-3">객관식 문제 출제하기</h3>
+      <p class="text-muted mb-4">객관식 문제를 등록하고 선택지를 입력해 출제합니다.</p>
+      <a href="{% url 'create_objective_question' %}" class="btn btn-custom btn-lg px-5 py-3">
+        객관식 문제
+      </a>
+    </div>
+    
+    <!-- 주관식 문제 카드 -->
+    <div class="card text-center" style="width: 400px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: none; border-radius: 12px; padding: 40px;">
+      <h3 class="mb-3">주관식 문제 출제하기</h3>
+      <p class="text-muted mb-4">주관식 문제를 등록하고 키워드 및 해설을 입력해 출제합니다.</p>
+      <a href="{% url 'create_subjective_question' %}" class="btn btn-custom btn-lg px-5 py-3">
+        주관식 문제
+      </a>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}

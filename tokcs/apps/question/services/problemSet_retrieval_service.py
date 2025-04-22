@@ -1,35 +1,48 @@
-from datetime import date
-from tokcs.apps.question.models.problemSet import ProblemSet
-from tokcs.apps.question.models.choice import ObjectiveAnswer, SubjectiveAnswer
-from django.contrib.auth import get_user_model
+# question/services/problemset_retrieval_service.py
 
-User = get_user_model()
+from django.shortcuts import get_object_or_404
+from question.models.problemSet import ProblemSetQuestion
 
-def get_active_problem_sets():
-    today = date.today()
-    return ProblemSet.objects.filter(scheduled_date__lte=today, close_date__gt=today, is_active=True)
+def get_problem_set_preview(ps_id):
+    """
+    문제 세트(ps_id)에 포함된 모든 문제를 '미리 보기'용으로 구성해서 반환합니다.
+    각 문제에 대해:
+      - question_type: 'MCQ' or 'SA'
+      - content: 문제 내용
+      - choices: [(선택지 문자열, is_correct), ...] (객관식만)
+      - keywords: [키워드 리스트] (주관식만)
+      - explanation: 해설
+      - score: 배점
+      - order: 순서
+    """
+    # get_object_or_404를 쓰면 PS가 없을 땐 404
+    psq_qs = ProblemSetQuestion.objects.filter(
+        problemset__id=ps_id
+    ).select_related('content_type').order_by('order')
+    if not psq_qs:
+        raise Http404("해당 문제 세트를 찾을 수 없습니다.")
 
-def get_problem_set_details(problem_set_id):
-    try:
-        problem_set = ProblemSet.objects.get(id=problem_set_id)
-    except ProblemSet.DoesNotExist:
-        return None
-    ps_questions = problem_set.problems.all().order_by('order')
-    details = {
-        'title': problem_set.title,
-        'description': problem_set.description,
-        'scheduled_date': problem_set.scheduled_date,
-        'close_date': problem_set.close_date,
-        'total_score': problem_set.total_score,
-        'is_active': problem_set.is_active,
-        'created_at': problem_set.created_at,
-        'questions': list(ps_questions),
+    preview = {
+        'problemset': psq_qs.first().problemset,  # ProblemSet 인스턴스
+        'questions': []
     }
-    return details
+    for psq in psq_qs:
+        q = psq.question
+        item = {
+            'order':     psq.order,
+            'type':      q.question_type,
+            'content':   q.content,
+            'explanation': q.explanation,
+            'score':     q.score,
+        }
+        if q.question_type == 'MCQ':
+            # choices.related_name='choices'
+            item['choices'] = [
+                {'content': c.content, 'is_correct': c.is_correct}
+                for c in q.choices.all()
+            ]
+        else:  # 'SA'
+            item['keywords'] = [kw.word for kw in q.keywords.all()]
+        preview['questions'].append(item)
 
-def get_user_recent_submissions(user, limit=5):
-    objective_qs = ObjectiveAnswer.objects.filter(user=user).select_related('question').order_by('-created_at')[:limit]
-    subjective_qs = SubjectiveAnswer.objects.filter(user=user).select_related('question').order_by('-created_at')[:limit]
-    submissions = list(objective_qs) + list(subjective_qs)
-    submissions.sort(key=lambda x: x.created_at, reverse=True)
-    return submissions[:limit]
+    return preview

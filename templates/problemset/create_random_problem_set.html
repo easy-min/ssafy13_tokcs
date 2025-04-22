@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5">
+  <h2>랜덤 문제 세트 생성</h2>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">{{ form.title.label_tag }} {{ form.title }}</div>
+    <div class="mb-3">{{ form.description.label_tag }} {{ form.description }}</div>
+
+    <div class="mb-3">{{ form.topic.label_tag }} {{ form.topic }}</div>
+    <div class="mb-3">{{ form.chapters.label_tag }} {{ form.chapters }}</div>
+
+    <div class="mb-3">{{ form.total_questions.label_tag }} {{ form.total_questions }}</div>
+    <div class="mb-3">{{ form.total_score.label_tag }} {{ form.total_score }}</div>
+    <div class="mb-3">{{ form.objective_ratio.label_tag }} {{ form.objective_ratio }}</div>
+    <div class="mb-3">{{ form.subjective_ratio.label_tag }} {{ form.subjective_ratio }}</div>
+    <div class="mb-3">{{ form.pass_threshold.label_tag }} {{ form.pass_threshold }}</div>
+
+    <div class="mb-3">{{ form.scheduled_date.label_tag }} {{ form.scheduled_date }}</div>
+    <div class="mb-3">{{ form.close_date.label_tag }} {{ form.close_date }}</div>
+
+    <button type="submit" class="btn btn-primary">문제 세트 생성 & 미리 보기</button>
+  </form>
+</div>
+
+<script>
+  // topic 선택 시 chapters 폼 체크박스 filter
+  document.querySelector("select[name=topic]").addEventListener("change", e=>{
+    const t = e.target.value;
+    document.querySelectorAll("input[name=chapters]").forEach(cb=>{
+      cb.parentElement.style.display = cb.value == "" || cb.value==t ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}

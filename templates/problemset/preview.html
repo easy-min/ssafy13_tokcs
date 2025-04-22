@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container my-5">
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% else %}
+      <h2>{{ problemset.title }} (문제 세트 미리 보기)</h2>
+      <p>총점: {{ problemset.total_score }}점, 합격 기준: {{ problemset.pass_threshold }}점</p>
+      <p>기간: {{ problemset.scheduled_date }} ~ {{ problemset.close_date }}</p>
+      <hr>
+
+      {% for q in questions %}
+        <div class="card mb-4 p-3">
+          <h5>문제 {{ q.order }}. {{ q.content }}</h5>
+          <p><small>배점: {{ q.score }}점</small></p>
+
+          {% if q.type == 'MCQ' %}
+            <ul class="list-group mb-2">
+              {% for ch in q.choices %}
+                <li class="list-group-item d-flex justify-content-between
+                           {% if ch.is_correct %}list-group-item-success{% endif %}">
+                  {{ ch.content }}
+                  {% if ch.is_correct %}<strong>✔ 정답</strong>{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p><em>주관식 정답 키워드:</em>
+              {% for kw in q.keywords %} <span class="badge bg-info">{{ kw }}</span>{% endfor %}
+            </p>
+          {% endif %}
+
+          {% if q.explanation %}
+            <div class="alert alert-secondary">
+              <strong>해설:</strong> {{ q.explanation }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,6 +1,65 @@
-venv/
-*.pyc
+# ===================================
+# 🐍 Python
+# ===================================
 __pycache__/
-*.sqlite3
-*.pem
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# ===================================
+# 💼 PyCharm (Professional)
+# ==================================
+.idea/
+*.iml
+
+# ===================================
+# 🐍 가상환경
+# ===================================
+venv/
+.venv/
+env/
+ENV/
+
+# ===================================
+# 📁 Django
+# ===================================
+*.sqlite3         # 개발용 SQLite DB (RDS나 MySQL 쓰면 제외 가능)
+*.log
+*.pot
+*.mo
+*.pyc
+local_settings.py # 환경 구분용 설정파일 있다면
+
+# migrations 캐시
+db.sqlite3
+*/migrations/*.pyc
+*/migrations/__pycache__/
+!ssafy13_tokcs/tokcs/migrations/__init__.py
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# static/media 파일 (배포 시 분리됨)
+staticfiles/
+static/
+media/
+
+# ===================================
+# 🔐 환경 변수
+# ===================================
 .env
+.env.*
+
+# ===================================
+# 🐳 Docker
+# ===================================
+**/__pycache__/
+*.pid
+*.seed
+*.bak
+*.swp
+*.swo
+
+# docker volume mount 결과물 무시 (예: dbdata, pgdata 등)
+dbdata/
+pgdata/

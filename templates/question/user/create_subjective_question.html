@@ -6,74 +6,99 @@
 <div class="container my-5">
   <h2 class="mb-4">주관식 문제 출제하기</h2>
 
-  {% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
-
   <form method="post">
     {% csrf_token %}
+    {{ form.non_field_errors }}
 
-    <!-- Topic 선택 -->
+    <!-- Topic 선택 (폼 필드와는 별개) -->
     <div class="mb-3">
       <label for="topic" class="form-label">Topic 선택</label>
-      <select class="form-control" id="topic" name="topic">
+      <select id="topic" class="form-control">
         <option value="">-- Topic 선택 --</option>
         {% for topic in topics %}
-        <option value="{{ topic.id }}">{{ topic.name }}</option>
+          <option value="{{ topic.id }}">{{ topic.name }}</option>
         {% endfor %}
       </select>
     </div>
 
     <!-- Chapter 선택 -->
     <div class="mb-3">
-      <label for="chapter" class="form-label">Chapter 선택</label>
-      <select class="form-control" id="chapter" name="chapter" required>
-        <option value="">-- Chapter 선택 --</option>
-        {% for chapter in chapters %}
-        <!-- data-topic="{{ chapter.topic_id }}" 를 통해 자바스크립트로 필터링 -->
-        <option value="{{ chapter.id }}" data-topic="{{ chapter.topic_id }}">{{ chapter.name }}</option>
-        {% endfor %}
-      </select>
+      {{ form.chapter.label_tag }}
+      {{ form.chapter }}
+      {% for err in form.chapter.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
     <!-- 문제 내용 -->
     <div class="mb-3">
-      <label for="content" class="form-label">문제 내용</label>
-      <textarea class="form-control" id="content" name="content" rows="4" placeholder="주관식 문제를 입력하세요" required></textarea>
+      {{ form.content.label_tag }}
+      {{ form.content }}
+      {% for err in form.content.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
-    <!-- 답안 키워드 입력 -->
+    <!-- 해설 -->
     <div class="mb-3">
-      <label class="form-label">정답 키워드 (최소 1개, 추가/삭제 가능)</label>
-      <div id="keywordContainer">
-        <!-- 기본 1개 필드 -->
-        <div class="keyword-item mb-2 d-flex gap-2">
-          <input type="text" class="form-control" name="keywords[]" placeholder="정답 키워드 1" required>
-          <button type="button" class="btn btn-danger" onclick="removeKeyword(this)">삭제</button>
-        </div>
-      </div>
-      <button type="button" class="btn btn-secondary mt-2" id="addKeywordBtn">키워드 추가하기</button>
+      {{ form.explanation.label_tag }}
+      {{ form.explanation }}
+      {% for err in form.explanation.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
-    <!-- 해설 (선택 사항) -->
+    <!-- 배점 -->
     <div class="mb-3">
-      <label for="explanation" class="form-label">해설 (선택 사항)</label>
-      <textarea class="form-control" id="explanation" name="explanation" rows="3" placeholder="해설을 입력하세요"></textarea>
+      {{ form.score.label_tag }}
+      {{ form.score }}
+      {% for err in form.score.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
-    <!-- 문제 점수 -->
-    <div class="mb-3">
-      <label for="score" class="form-label">문제 점수</label>
-      <input type="number" class="form-control" id="score" name="score" value="5" min="1">
-    </div>
+    <!-- 키워드 & 중요도(formset) -->
+    <h4 class="mt-4">채점용 키워드 & 중요도 설정</h4>
+    {{ formset.management_form }}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>키워드</th>
+          <th>중요도</th>
+          <th>삭제</th>
+        </tr>
+      </thead>
+      <tbody id="formset-body">
+        {% for fs in formset %}
+          <tr class="formset-row">
+            <td>
+              {{ fs.keyword }}
+              {% for err in fs.keyword.errors %}
+                <div class="text-danger">{{ err }}</div>
+              {% endfor %}
+            </td>
+            <td>
+              {{ fs.importance }}
+              {% for err in fs.importance.errors %}
+                <div class="text-danger">{{ err }}</div>
+              {% endfor %}
+            </td>
+            <td>
+              {{ fs.DELETE }} 삭제
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="button" class="btn btn-secondary mb-4" id="add-formset-row">
+      키워드 추가하기
+    </button>
 
-    <!-- 제출 버튼 영역 -->
+    <!-- 제출 버튼 -->
     <div class="d-flex justify-content-between">
-      <!-- 계속해서 문제 출제하기 -->
       <button type="submit" name="submit_type" value="continue" class="btn btn-warning">
         이어서 문제 계속 제출하기
       </button>
-      <!-- 문제 제출 후 상세 페이지 이동 -->
       <button type="submit" name="submit_type" value="finish" class="btn btn-primary">
         문제 제출하기
       </button>
@@ -81,51 +106,41 @@
   </form>
 </div>
 
-<!-- JavaScript -->
 <script>
-  // Topic 선택 시, data-topic을 통해 Chapter 필터링
-  const topicSelect = document.getElementById("topic");
-  topicSelect.addEventListener("change", function() {
+  // Topic → Chapter 필터
+  document.getElementById("topic").addEventListener("change", function() {
     const topicId = this.value;
-    const chapterSelect = document.getElementById("chapter");
-    for (let i = 0; i < chapterSelect.options.length; i++) {
-      const opt = chapterSelect.options[i];
-      if (i === 0) {
-        opt.style.display = "block"; // 첫 번째 기본 옵션
-        continue;
-      }
-      if (opt.getAttribute("data-topic") === topicId) {
+    const chapterSelect = document.getElementById("id_chapter");
+    Array.from(chapterSelect.options).forEach((opt, idx) => {
+      if (idx === 0) {
         opt.style.display = "block";
       } else {
-        opt.style.display = "none";
+        opt.style.display = opt.dataset.topic === topicId ? "block" : "none";
       }
-    }
+    });
     chapterSelect.selectedIndex = 0;
   });
 
-  // 키워드 추가하기
-  const addKeywordBtn = document.getElementById('addKeywordBtn');
-  addKeywordBtn.addEventListener('click', function() {
-    const container = document.getElementById('keywordContainer');
-    const count = container.getElementsByClassName('keyword-item').length;
-    const newIdx = count + 1;
-    const div = document.createElement('div');
-    div.className = 'keyword-item mb-2 d-flex gap-2';
-    div.innerHTML = `
-      <input type="text" class="form-control" name="keywords[]" placeholder="정답 키워드 ${newIdx}" required>
-      <button type="button" class="btn btn-danger" onclick="removeKeyword(this)">삭제</button>
-    `;
-    container.appendChild(div);
-  });
+  // inline formset 행 추가 스크립트
+  const addBtn = document.getElementById("add-formset-row");
+  addBtn.addEventListener("click", () => {
+    const totalForms = document.getElementById("id_questionkeywordmapping_set-TOTAL_FORMS");
+    const formCount = parseInt(totalForms.value);
+    const maxForms = parseInt(document.getElementById("id_questionkeywordmapping_set-MAX_NUM_FORMS").value) || Infinity;
+    if (formCount >= maxForms) return;
 
-  // 키워드 삭제
-  function removeKeyword(button){
-    const container = document.getElementById('keywordContainer');
-    if(container.getElementsByClassName('keyword-item').length <= 1){
-      alert("최소 1개의 키워드는 유지되어야 합니다.");
-      return;
-    }
-    button.parentElement.remove();
-  }
+    const emptyRow = document.querySelector(".formset-row").cloneNode(true);
+    // 새 인덱스로 교체
+    const regex = new RegExp(`-${formCount-1}-`, "g");
+    emptyRow.innerHTML = emptyRow.innerHTML.replace(regex, `-${formCount}-`);
+    // 에러 메시지 제거
+    emptyRow.querySelectorAll(".text-danger").forEach(el => el.remove());
+    // DELETE 체크박스 초기화
+    const deleteInput = emptyRow.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (deleteInput) deleteInput.checked = false;
+
+    document.getElementById("formset-body").appendChild(emptyRow);
+    totalForms.value = formCount + 1;
+  });
 </script>
 {% endblock %}

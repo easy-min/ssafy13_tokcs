@@ -1,78 +1,65 @@
+# question/views/objective_question_views.py
+
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from ..services.question_creation_service import create_objective_question
-from ..models.chapter import Chapter
-from ..models.topic import Topic
-from ..models.question import ObjectiveQuestion
+from django.contrib.auth.decorators import login_required, user_passes_test
+from question.models.question import ObjectiveQuestion
+from question.models.topic import Topic
+from question.models.chapter import Chapter
+from question.forms.objective_question_forms import ObjectiveQuestionForm, ChoiceFormSet
+
+def is_admin(user):
+    return user.is_staff
 
 @login_required
 def create_objective_question_view(request):
+    topics   = Topic.objects.all()
+    chapters = Chapter.objects.all()
+
     if request.method == 'POST':
-        # 필드 추출
-        chapter_id = request.POST.get('chapter')
-        content = request.POST.get('content', '').strip()
-        explanation = request.POST.get('explanation', '').strip()
-        try:
-            score = int(request.POST.get('score', 5))
-        except ValueError:
-            score = 5
+        form    = ObjectiveQuestionForm(request.POST)
+        formset = ChoiceFormSet(request.POST)
 
-        # 선택지 처리
-        choices_list = request.POST.getlist('choices[]')
-        choices_clean = [c.strip() for c in choices_list if c.strip()]
-        if len(choices_clean) < 2:
-            error = "최소 2개의 선택지를 입력해야 합니다."
-            topics = Topic.objects.all()
-            chapters = Chapter.objects.all()
-            return render(request, 'question/user/create_objective_question.html', {
-                'error': error,
-                'topics': topics,
-                'chapters': chapters
-            })
+        if form.is_valid() and formset.is_valid():
+            # 삭제되지 않은 유효한 선택지 개수 계산
+            valid_choices = [
+                cd for cd in formset.cleaned_data
+                if cd and not cd.get('DELETE', False)
+            ]
+            choice_count = len(valid_choices)
 
-        # 정답 지정 (1부터 시작)
-        correct_choice_index = request.POST.get('correct_choice')
-        try:
-            correct_choice_index = int(correct_choice_index)
-        except (TypeError, ValueError):
-            correct_choice_index = 0
+            # 2개 이상, 7개 이하 검증
+            if choice_count < 2 or choice_count > 7:
+                error = "선택지는 2개 이상, 7개 이하로 입력해야 합니다."
+                return render(request, 'question/user/create_objective_question.html', {
+                    'form':    form,
+                    'formset': formset,
+                    'topics':  topics,
+                    'chapters': chapters,
+                    'error':   error,
+                })
 
-        choices = []
-        for i, choice_text in enumerate(choices_clean):
-            choices.append({
-                'content': choice_text,
-                'is_correct': ((i + 1) == correct_choice_index)
-            })
+            # 1) Question 저장 준비
+            question = form.save(commit=False)
+            question.creator       = request.user
+            question.question_type = 'MCQ'
+            question.save()
 
-        question_data = {
-            'chapter_id': int(chapter_id),
-            'content': content,
-            'explanation': explanation,
-            'score': score,
-            'question_type': 'MCQ',
-            'choices': choices,
-        }
+            # 2) Choice formset 저장
+            formset.instance = question
+            formset.save()
 
-        # 문제 생성
-        question = create_objective_question(request.user, question_data)
-
-        # 어떤 버튼으로 제출했는지 확인
-        submit_type = request.POST.get('submit_type')
-        if submit_type == 'continue':
-            return redirect('create_objective_question')  # 같은 페이지로 리디렉션
-        return redirect('objective_question_detail', question_id=question.id)
+            # 3) 계속/완료 분기
+            if request.POST.get('submit_type') == 'continue':
+                return redirect('create_objective_question')
+            return redirect('objective_question_detail', question_id=question.id)
 
     else:
-        topics = Topic.objects.all()
-        chapters = Chapter.objects.all()
-        return render(request, 'question/user/create_objective_question.html', {
-            'topics': topics,
-            'chapters': chapters
-        })
+        form    = ObjectiveQuestionForm()
+        formset = ChoiceFormSet()
 
-@login_required
-def objective_question_detail_view(request, question_id):
-    question = get_object_or_404(ObjectiveQuestion, id=question_id)
-    return render(request, 'question/user/objective_question_detail.html', {
-        'question': question
+    return render(request, 'question/user/create_objective_question.html', {
+        'form':     form,
+        'formset':  formset,
+        'topics':   topics,
+        'chapters': chapters,
     })

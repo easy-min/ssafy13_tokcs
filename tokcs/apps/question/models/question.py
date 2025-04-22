@@ -13,6 +13,7 @@ class BaseQuestion(models.Model):
     explanation = models.TextField(blank=True, verbose_name="해설")
     score = models.PositiveIntegerField(null=True, blank=True, verbose_name="배점")
     created_at = models.DateTimeField(auto_now_add=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="작성자")
 
     class Meta:
         abstract = True

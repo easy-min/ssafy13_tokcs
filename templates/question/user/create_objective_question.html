@@ -12,165 +12,142 @@
 
   <form method="post">
     {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ formset.non_form_errors }}
 
-    <!-- Topic 선택 -->
+    <!-- Topic 선택 (폼 필드와는 별개) -->
     <div class="mb-3">
       <label for="topic" class="form-label">Topic 선택</label>
-      <select class="form-control" id="topic" name="topic">
+      <select id="topic" class="form-control">
         <option value="">-- Topic 선택 --</option>
         {% for topic in topics %}
-        <option value="{{ topic.id }}">{{ topic.name }}</option>
+          <option value="{{ topic.id }}">{{ topic.name }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <!-- Chapter 선택 -->
+    <!-- Chapter 선택 (data-topic 유지) -->
     <div class="mb-3">
-      <label for="chapter" class="form-label">Chapter 선택</label>
-      <select class="form-control" id="chapter" name="chapter" required>
+      <label for="id_chapter" class="form-label">Chapter 선택</label>
+      <select id="id_chapter" name="chapter" class="form-control" required>
         <option value="">-- Chapter 선택 --</option>
         {% for chapter in chapters %}
-        <option value="{{ chapter.id }}" data-topic="{{ chapter.topic_id }}">{{ chapter.name }}</option>
+        <option value="{{ chapter.id }}"
+                data-topic="{{ chapter.topic_id }}"
+                {% if form.chapter.value|stringformat:"s" == chapter.id|stringformat:"s" %}selected{% endif %}>
+          {{ chapter.name }}
+        </option>
         {% endfor %}
       </select>
+      {% for err in form.chapter.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
     <!-- 문제 내용 -->
     <div class="mb-3">
-      <label for="content" class="form-label">문제 내용</label>
-      <textarea class="form-control" id="content" name="content" rows="4" placeholder="문제를 입력하세요" required></textarea>
+      {{ form.content.label_tag }}
+      {{ form.content }}
+      {% for err in form.content.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
     <!-- 해설 -->
     <div class="mb-3">
-      <label for="explanation" class="form-label">해설 (선택 사항)</label>
-      <textarea class="form-control" id="explanation" name="explanation" rows="3" placeholder="해설을 입력하세요"></textarea>
+      {{ form.explanation.label_tag }}
+      {{ form.explanation }}
+      {% for err in form.explanation.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
     <!-- 점수 -->
     <div class="mb-3">
-      <label for="score" class="form-label">문제 점수</label>
-      <input type="number" class="form-control" id="score" name="score" value="5" min="1">
+      {{ form.score.label_tag }}
+      {{ form.score }}
+      {% for err in form.score.errors %}
+        <div class="text-danger">{{ err }}</div>
+      {% endfor %}
     </div>
 
-    <!-- 선택지 입력 -->
-    <div class="mb-3">
-      <label class="form-label">선택지 (최소 2개, 기본 5개)</label>
-      <div id="choiceContainer">
-        {% for i in "12345"|make_list %}
-        <div class="choice-item mb-2">
-          <div class="input-group">
-            <span class="input-group-text">선택지 {{ forloop.counter }}</span>
-            <input type="text" class="form-control" name="choices[]" placeholder="선택지 {{ forloop.counter }}" {% if forloop.counter <= 2 %}required{% endif %}>
-            <button type="button" class="btn btn-danger" onclick="removeChoice(this)">삭제</button>
-          </div>
-        </div>
+    <!-- Choice formset -->
+    <h4 class="mt-4">선택지 설정 (최소 2개, 최대 7개)</h4>
+    {{ formset.management_form }}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>보기 내용</th>
+          <th>정답 여부</th>
+          <th>삭제</th>
+        </tr>
+      </thead>
+      <tbody id="formset-body">
+        {% for fs in formset %}
+        <tr class="formset-row">
+          <td>
+            {{ fs.content }}
+            {% for err in fs.content.errors %}
+              <div class="text-danger">{{ err }}</div>
+            {% endfor %}
+          </td>
+          <td>
+            {{ fs.is_correct }}
+          </td>
+          <td>
+            {{ fs.DELETE }} 삭제
+          </td>
+        </tr>
         {% endfor %}
-      </div>
-      <button type="button" class="btn btn-secondary mt-2" id="addChoiceBtn">선택지 추가하기</button>
-    </div>
+      </tbody>
+    </table>
+    <button type="button" class="btn btn-secondary mb-4" id="add-formset-row">
+      선택지 추가하기
+    </button>
 
-    <!-- 정답 선택 -->
-    <div class="mb-3">
-      <label class="form-label">정답 선택</label>
-      <div id="radioContainer">
-        {% for i in "12345"|make_list %}
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="correct_choice" id="choiceRadio{{ forloop.counter }}" value="{{ forloop.counter }}" {% if forloop.counter == 1 %}required{% endif %}>
-          <label class="form-check-label" for="choiceRadio{{ forloop.counter }}">선택지 {{ forloop.counter }}</label>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- 제출 -->
+    <!-- 제출 버튼 -->
     <div class="d-flex justify-content-between">
-      <button type="submit" name="submit_type" value="continue" class="btn btn-warning">이어서 문제 계속 제출하기</button>
-      <button type="submit" name="submit_type" value="finish" class="btn btn-primary">문제 제출하기</button>
+      <button type="submit" name="submit_type" value="continue" class="btn btn-warning">
+        이어서 문제 계속 제출하기
+      </button>
+      <button type="submit" name="submit_type" value="finish" class="btn btn-primary">
+        문제 제출하기
+      </button>
     </div>
   </form>
 </div>
 
-<!-- JavaScript -->
 <script>
-  // Topic에 따른 Chapter 필터링
-  document.getElementById("topic").addEventListener("change", function () {
+  // Topic → Chapter 필터
+  document.getElementById("topic").addEventListener("change", function() {
     const topicId = this.value;
-    const chapterSelect = document.getElementById("chapter");
-    for (let i = 0; i < chapterSelect.options.length; i++) {
-      const option = chapterSelect.options[i];
-      if (i === 0) {
-        option.style.display = "block";
-        continue;
-      }
-      option.style.display = (option.getAttribute("data-topic") === topicId) ? "block" : "none";
-    }
+    const chapterSelect = document.getElementById("id_chapter");
+    Array.from(chapterSelect.options).forEach((opt, idx) => {
+      if (idx === 0) return opt.style.display = "block";
+      opt.style.display = opt.dataset.topic === topicId ? "block" : "none";
+    });
     chapterSelect.selectedIndex = 0;
   });
 
-  // 선택지 추가
-  document.getElementById('addChoiceBtn').addEventListener('click', function () {
-    const container = document.getElementById('choiceContainer');
-    const count = container.getElementsByClassName('choice-item').length;
-    const newNum = count + 1;
-    const div = document.createElement('div');
-    div.className = 'choice-item mb-2';
-    div.innerHTML = `
-      <div class="input-group">
-        <span class="input-group-text">선택지 ${newNum}</span>
-        <input type="text" class="form-control" name="choices[]" placeholder="선택지 ${newNum}" ${newNum <= 2 ? "required" : ""}>
-        <button type="button" class="btn btn-danger" onclick="removeChoice(this)">삭제</button>
-      </div>
-    `;
-    container.appendChild(div);
-    updateRadioOptions();
-    updateChoiceNumbers();
+  // inline formset 행 추가 스크립트
+  const addBtn = document.getElementById("add-formset-row");
+  addBtn.addEventListener("click", () => {
+    const totalForms = document.getElementById("id_choice_set-TOTAL_FORMS");
+    const formCount = parseInt(totalForms.value);
+    const maxForms = 7;  // 최대 7개
+    if (formCount >= maxForms) return alert("최대 7개의 선택지만 설정할 수 있습니다.");
+
+    const emptyRow = document.querySelector(".formset-row").cloneNode(true);
+    // 인덱스 교체
+    const regex = new RegExp(`-${formCount-1}-`, "g");
+    emptyRow.innerHTML = emptyRow.innerHTML.replace(regex, `-${formCount}-`);
+    // 에러 제거, DELETE 해제
+    emptyRow.querySelectorAll(".text-danger").forEach(el => el.remove());
+    const del = emptyRow.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (del) del.checked = false;
+
+    document.getElementById("formset-body").appendChild(emptyRow);
+    totalForms.value = formCount + 1;
   });
-
-  // 선택지 삭제
-  function removeChoice(button) {
-    const container = document.getElementById('choiceContainer');
-    if (container.getElementsByClassName('choice-item').length <= 2) {
-      alert("최소 2개의 선택지는 유지되어야 합니다.");
-      return;
-    }
-    button.parentElement.parentElement.remove();
-    updateRadioOptions();
-    updateChoiceNumbers();
-  }
-
-  // 선택지 번호 갱신
-  function updateChoiceNumbers() {
-    const items = document.querySelectorAll('#choiceContainer .choice-item');
-    items.forEach((item, index) => {
-      const label = item.querySelector('.input-group-text');
-      const input = item.querySelector('input');
-      label.textContent = `선택지 ${index + 1}`;
-      input.setAttribute('placeholder', `선택지 ${index + 1}`);
-      if (index < 2) input.setAttribute('required', 'required');
-      else input.removeAttribute('required');
-    });
-  }
-
-  // 라디오 버튼도 갱신
-  function updateRadioOptions() {
-    const inputs = document.querySelectorAll('#choiceContainer .choice-item input');
-    const container = document.getElementById('radioContainer');
-    container.innerHTML = '';
-    inputs.forEach((input, index) => {
-      const num = index + 1;
-      const div = document.createElement('div');
-      div.className = 'form-check';
-      div.innerHTML = `
-        <input class="form-check-input" type="radio" name="correct_choice" id="choiceRadio${num}" value="${num}" ${num === 1 ? 'required' : ''}>
-        <label class="form-check-label" for="choiceRadio${num}">선택지 ${num}</label>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  // 페이지 로드시 초기화
-  updateRadioOptions();
-  updateChoiceNumbers();
 </script>
 {% endblock %}

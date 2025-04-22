@@ -2,10 +2,11 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from question.models.question import ObjectiveQuestion
-from question.models.topic import Topic
-from question.models.chapter import Chapter
-from question.forms.objective_question_forms import ObjectiveQuestionForm, ChoiceFormSet
+
+from tokcs.apps.question.forms.objective_question_forms import ObjectiveQuestionForm, ChoiceFormSet
+from tokcs.apps.question.models.chapter import Chapter
+from tokcs.apps.question.models.topic import Topic
+
 
 def is_admin(user):
     return user.is_staff

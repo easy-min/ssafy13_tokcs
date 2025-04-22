@@ -21,10 +21,19 @@
       </select>
     </div>
 
-    <!-- Chapter 선택 -->
+    <!-- 2) Chapter 수동 렌더링 -->
     <div class="mb-3">
-      {{ form.chapter.label_tag }}
-      {{ form.chapter }}
+      <label for="id_chapter" class="form-label">Chapter 선택</label>
+      <select id="id_chapter" name="chapter" class="form-control" required>
+        <option value="">-- Chapter 선택 --</option>
+        {% for chapter in chapters %}
+          <option value="{{ chapter.id }}"
+                  data-topic="{{ chapter.topic_id }}"
+                  {% if form.chapter.value|stringformat:"s" == chapter.id|stringformat:"s" %}selected{% endif %}>
+            {{ chapter.name }}
+          </option>
+        {% endfor %}
+      </select>
       {% for err in form.chapter.errors %}
         <div class="text-danger">{{ err }}</div>
       {% endfor %}

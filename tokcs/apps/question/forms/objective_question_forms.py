@@ -1,6 +1,8 @@
 from django import forms
 from django.forms.models import inlineformset_factory
-from question.models.question import ObjectiveQuestion, Choice
+
+from tokcs.apps.question.models.question import ObjectiveQuestion, Choice
+
 
 class ObjectiveQuestionForm(forms.ModelForm):
     class Meta:

@@ -1,7 +1,6 @@
-# question/forms.py
-from django.forms import ModelForm
+from django.forms import ModelForm, forms
 from django.forms.models import inlineformset_factory
-from question.models import SubjectiveQuestion, QuestionKeywordMapping
+from tokcs.apps.question.models.question import SubjectiveQuestion, QuestionKeywordMapping
 
 class SubjectiveQuestionForm(ModelForm):
     class Meta:

@@ -1,8 +1,8 @@
 from django import forms
 from django.utils import timezone
-from question.models.problemSet import ProblemSet
-from question.models.chapter    import Chapter
-from question.models.topic      import Topic
+from tokcs.apps.question.models.chapter import Chapter
+from tokcs.apps.question.models.problemSet import ProblemSet
+from tokcs.apps.question.models.topic import Topic
 
 class ProblemSetForm(forms.ModelForm):
     # 추가 필드

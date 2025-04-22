@@ -1,0 +1,37 @@
+{% extends "question/user/base.html" %}
+
+{% block title %}객관식 문제 상세{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">객관식 문제 상세</h2>
+  
+  <div class="card">
+    <div class="card-header">
+      문제 정보
+    </div>
+    <div class="card-body">
+      <p class="card-text"><strong>문제 내용:</strong> {{ question.content }}</p>
+      {% if question.explanation %}
+      <p class="card-text"><strong>해설:</strong> {{ question.explanation }}</p>
+      {% endif %}
+      <p class="card-text"><strong>배점:</strong> {{ question.score }}</p>
+      <p class="card-text"><strong>단원:</strong> {{ question.chapter.name }}</p>
+    </div>
+    
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>선택지 목록:</strong></li>
+      {% for choice in question.choices.all %}
+      <li class="list-group-item {% if choice.is_correct %}list-group-item-success{% endif %}">
+        {{ forloop.counter }}. {{ choice.content }}
+        {% if choice.is_correct %}
+          <span class="badge bg-success">정답</span>
+        {% endif %}
+      </li>
+      {% empty %}
+      <li class="list-group-item">선택지가 없습니다.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

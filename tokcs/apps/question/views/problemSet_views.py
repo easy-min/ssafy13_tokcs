@@ -29,3 +29,17 @@ def problem_set_detail_view(request, ps_id):
     return render(request, 'problemset/problem_set_detail.html', {
         'problem_set': details
     })
+@login_required
+@user_passes_test(is_admin)
+def problem_set_preview_view(request, ps_id):
+    try:
+        preview = get_problem_set_preview(ps_id)
+    except Http404 as e:
+        return render(request, 'problemset/preview.html', {
+            'error': str(e)
+        }, status=404)
+
+    return render(request, 'problemset/preview.html', {
+        'problemset': preview['problemset'],
+        'questions':  preview['questions'],
+    })
